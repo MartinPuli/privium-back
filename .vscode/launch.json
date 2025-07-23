@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot: MarketplaceBackendApplication",
+      "request": "launch",
+      "mainClass": "Marketplace.MarketplaceBackendApplication",
+      "projectName": "marketplace-backend",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-MarketplaceBackendApplication<Marketplace>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "Marketplace.MarketplaceBackendApplication",
+      "projectName": "Marketplace",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

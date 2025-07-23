@@ -1,0 +1,42 @@
+package Marketplace.repositories;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import Marketplace.commons.dtos.ResponseDto;
+
+@Repository
+public interface IAuthRepository extends JpaRepository<ResponseDto, Integer> {
+
+        @Query(value = "EXEC SetEmailConfirmationToken :userId, :token", nativeQuery = true)
+        ResponseDto setEmailConfirmationToken(@Param("userId") Long userId,
+                        @Param("token") String token);
+
+        @Query(value = "EXEC VerifyEmail :token", nativeQuery = true)
+        ResponseDto verifyEmail(@Param("token") String token);
+
+        @Query(value = "EXEC SetResetToken :email, :token", nativeQuery = true)
+        ResponseDto setResetToken(
+                        @Param("email") String email,
+                        @Param("token") String token);
+
+        @Query(value = "EXEC UpdatePassword :token, :newPasswordHash", nativeQuery = true)
+        ResponseDto updatePassword(
+                        @Param("token") String token,
+                        @Param("newPasswordHash") String newPasswordHash);
+
+        @Query(value = "EXEC ApproveResidence :adminId, :userId, :approved", nativeQuery = true)
+        ResponseDto approveResidence(
+                        @Param("adminId") Long adminId,
+                        @Param("userId") Long userId,
+                        @Param("approved") Integer approved);
+
+        @Query(value = "EXEC GetPasswordHashByEmail :email", nativeQuery = true)
+        String getPasswordHashByEmail(@Param("email") String email);
+
+        @Query(value = "EXEC GetPasswordHashByToken :token", nativeQuery = true)
+        String getPasswordHashByToken(@Param("token") String token);
+}
