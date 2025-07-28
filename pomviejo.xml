@@ -10,6 +10,12 @@
     <name>marketplace-backend</name>
     <description>Backend Spring Boot for Marketplace</description>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath />
+    </parent>
 
     <properties>
         <java.version>21</java.version>
@@ -91,7 +97,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.3.4</version>           <!-- usa la versión que tengas del plugin de Spring Boot -->
+                <version>3.2.4</version>           <!-- usa la versión que tengas del plugin de Spring Boot -->
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
