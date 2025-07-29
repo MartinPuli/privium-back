@@ -70,6 +70,11 @@ public class AdminServiceImpl implements AdminService {
             return ResponseDto.builder().code(404).description("Publicación no encontrada").build();
         }
 
+        User owner = userRepository.findById(req.getOwnerId());
+        if (owner == null) {
+            return ResponseDto.builder().code(404).description("Usuario no encontrado").build();
+        }
+
         ListingRequestDto statusReq = new ListingRequestDto();
         statusReq.setListingId(req.getListingId());
         statusReq.setAction("DELETE");
@@ -77,7 +82,7 @@ public class AdminServiceImpl implements AdminService {
 
         if (resp != null && (resp.getCode() == 0 || resp.getCode() == 200)) {
             try {
-                emailService.sendListingDeletionEmail(listing.getOwner(), listing.getTitle(), req.getMessage());
+                emailService.sendListingDeletionEmail(owner, listing.getTitle(), req.getMessage());
             } catch (MessagingException e) {
                 log.error(LOG_TXT + DELETE_TXT + " Error enviando correo", e);
             }

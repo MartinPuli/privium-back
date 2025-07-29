@@ -13,5 +13,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class ListingAdminRequestDto implements Serializable {
     private Long listingId;
+    private Long ownerId;
     private String message;
 }
