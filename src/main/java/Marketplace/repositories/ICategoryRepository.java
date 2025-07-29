@@ -13,7 +13,7 @@ import java.util.List;
 public interface ICategoryRepository extends CrudRepository<Category, String> {
 
     @Query(value =
-        "CALL dbo.GetCategories (:rootId, :leafId)",
+        "CALL GetCategories (:rootId, :leafId)",
         nativeQuery = true)
     List<ICategoryDto> getCategories(
             @Param("rootId") String rootId,
