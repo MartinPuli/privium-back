@@ -69,10 +69,10 @@ public class ListingServiceImpl implements ListingService {
                 log.info(LOG_TXT + LIST_TXT + " Recuperando publicaciones. userId={}, status={}",
                                 request.getUserId(), request.getStatus());
 
-                String sep = String.valueOf((char) 31);
+                String catSep = ",";
                 String catsCsv = null;
                 if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-                        catsCsv = request.getCategoryIds().stream().collect(Collectors.joining(sep));
+                        catsCsv = request.getCategoryIds().stream().collect(Collectors.joining(catSep));
                 }
 
                 List<IListingDto> raw = listingRepository.listListings(
@@ -114,12 +114,13 @@ public class ListingServiceImpl implements ListingService {
                         }
                 }
 
-                // 3) Preparar CSVs con separador CHAR(31)
-                String sep = String.valueOf((char) 31);
+                // 3) Preparar CSVs
+                String catSep = ",";
+                String imgSep = String.valueOf((char) 31);
                 String catsCsv = (request.getCategoriesId() != null)
-                                ? String.join(sep, request.getCategoriesId())
+                                ? String.join(catSep, request.getCategoriesId())
                                 : null;
-                String imgsCsv = auxUrls.isEmpty() ? null : String.join(sep, auxUrls);
+                String imgsCsv = auxUrls.isEmpty() ? null : String.join(imgSep, auxUrls);
 
                 // 4) Llamar al SP AddListing (guarda mainImageUrl)
                 IListingDto created = listingRepository.addListing(
