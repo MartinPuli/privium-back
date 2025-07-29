@@ -78,13 +78,14 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         }
 
         /* ── CSV de categorías y auxiliares ──────────────────── */
-        String sep = String.valueOf((char) 31);
+        String catSep = ",";
+        String imgSep = String.valueOf((char) 31);
         String catsCsv = (req.getCategoriesId() == null) ? null
-                : String.join(sep, req.getCategoriesId());
+                : String.join(catSep, req.getCategoriesId());
 
         // Auxiliares: sólo URLs no‑null en el orden 1‑4
         String imgsCsv = Arrays.stream(finalAux)
-                .collect(Collectors.joining(sep));
+                .collect(Collectors.joining(imgSep));
         if (imgsCsv.isBlank())
             imgsCsv = null;
 
