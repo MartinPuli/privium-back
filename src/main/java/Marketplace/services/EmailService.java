@@ -20,4 +20,6 @@ public interface EmailService {
 
     public void sendResidenceDecisionEmail(User user, boolean approved)
                         throws MessagingException;
+
+    void sendContactMessage(User user, String message) throws MessagingException;
 }
