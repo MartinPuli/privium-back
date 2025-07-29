@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ContactRequestDto implements Serializable {
+    private String messageHeader;
     private String message;
 }

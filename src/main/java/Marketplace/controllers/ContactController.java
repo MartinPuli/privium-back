@@ -28,7 +28,8 @@ public class ContactController {
             @RequestHeader(TextConstant.USER_HEADER) Long userId,
             @RequestBody ContactRequestDto request) throws SQLException, MessagingException {
 
-        log.info(LOG_TXT + SEND_TXT + " userId={} msg={}", userId, request.getMessage());
+        log.info(LOG_TXT + SEND_TXT + " userId={} msgHeader={} msg={}",
+                userId, request.getMessageHeader(), request.getMessage());
 
         ResponseDto resp = contactService.sendContactMessage(userId, request);
 
