@@ -1,4 +1,5 @@
 package Marketplace.services.impl;
+
 import Marketplace.commons.dtos.ResponseDto;
 import Marketplace.dtos.request.ListingRequestDto;
 import Marketplace.projections.IListingImagesUrlsDto;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,21 +44,23 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             MultipartFile image3,
             MultipartFile image4) throws Exception {
 
-        log.info(LOG_TXT + EDIT_TXT + " Editando publicacion listingId={}",req.getListingId());
+        log.info(LOG_TXT + EDIT_TXT + " Editando publicacion listingId={}", req.getListingId());
 
-        /* ── URLs actuales ───────────────────────────────────── */
+        // ── URLs actuales ─────────────────────────────────────
         IListingImagesUrlsDto current = listingRepository.getListingImages(req.getListingId());
 
-        /* ── Principal ───────────────────────────────────────── */
+        // ── Principal ─────────────────────────────────────────
         String finalMain = (current != null) ? current.getMainImage() : null;
         if (mainImage != null) {
-            if (finalMain != null)
+            // Subir primero, borrar después (evita quedar sin imagen si falla el upload)
+            String newMain = s3Service.uploadFile(mainImage);
+            if (finalMain != null) {
                 s3Service.deleteFile(s3Service.extractKey(finalMain));
-            finalMain = s3Service.uploadFile(mainImage);
+            }
+            finalMain = newMain;
         }
 
-        /* ── Auxiliares (máx 4) ──────────────────────────────── */
-        // Vector con las URLs actuales en orden 0‑3
+        // ── Auxiliares (máx 4) ────────────────────────────────
         String[] finalAux = {
                 current != null ? current.getAux1() : null,
                 current != null ? current.getAux2() : null,
@@ -65,31 +69,41 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         };
 
         boolean imagesChanged = false;
-
         MultipartFile[] parts = { image1, image2, image3, image4 };
         for (int i = 0; i < parts.length; i++) {
             MultipartFile part = parts[i];
             if (part != null) {
                 imagesChanged = true;
-                if (finalAux[i] != null)
+                if (finalAux[i] != null) {
                     s3Service.deleteFile(s3Service.extractKey(finalAux[i]));
+                }
                 finalAux[i] = s3Service.uploadFile(part);
             }
         }
 
-        /* ── CSV de categorías y auxiliares ──────────────────── */
-        String catSep = ",";
-        String imgSep = String.valueOf((char) 31);
-        String catsCsv = (req.getCategoriesId() == null) ? null
-                : String.join(catSep, req.getCategoriesId());
+        // ── CSV de categorías y auxiliares ────────────────────
+        String catsCsv = (req.getCategoriesId() == null)
+                ? null
+                : String.join(",", req.getCategoriesId());
 
-        // Auxiliares: sólo URLs no‑null en el orden 1‑4
-        String imgsCsv = Arrays.stream(finalAux)
-                .collect(Collectors.joining(imgSep));
-        if (imgsCsv.isBlank())
-            imgsCsv = null;
+        // Sólo construir imgsCsv si efectivamente vamos a persistir cambios de
+        // auxiliares
+        String imgsCsv = null;
+        if (imagesChanged) {
+            String imgSep = String.valueOf((char) 31); // CHAR(31)
+            imgsCsv = Arrays.stream(finalAux)
+                    .filter(Objects::nonNull) // evita NPE
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty()) // ignora vacíos
+                    .collect(Collectors.joining(imgSep));
+            if (imgsCsv.isEmpty()) {
+                // Si después del filtrado no queda nada, pasamos null para que el SP borre las
+                // auxiliares
+                imgsCsv = null;
+            }
+        }
 
-        /* ── Guardar publicación ─────────────────────────────── */
+        // ── Guardar publicación ───────────────────────────────
         ResponseDto response = listingCUDRepository.editListing(
                 req.getListingId(),
                 req.getTitle(),
@@ -100,7 +114,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                 req.getAcceptsTransfer(), req.getAcceptsCard(),
                 req.getType(), req.getBrand(), catsCsv);
 
-        /* Auxiliares en BD (si hubo cambios) */
+        // Persistir auxiliares sólo si hubo cambios en archivos
         if (imagesChanged) {
             listingCUDRepository.setAuxImages(req.getListingId(), imgsCsv);
         }
