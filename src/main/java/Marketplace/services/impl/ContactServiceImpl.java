@@ -28,10 +28,11 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public ResponseDto sendContactMessage(Long userId, ContactRequestDto request) throws SQLException, MessagingException {
-        log.info(LOG_TXT + SEND_TXT + " Enviando mensaje de contacto userId={} msg={}", userId, request.getMessage());
+        log.info(LOG_TXT + SEND_TXT + " Enviando mensaje de contacto userId={} msgHeader={} msg={}",
+                userId, request.getMessageHeader(), request.getMessage());
 
         User user = userRepository.findById(userId);
-        emailService.sendContactMessage(user, request.getMessage());
+        emailService.sendContactMessage(user, request.getMessageHeader(), request.getMessage());
 
         return ResponseDto.builder()
                 .code(200)

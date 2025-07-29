@@ -24,5 +24,5 @@ public interface EmailService {
     void sendListingDeletionEmail(User owner, String listingTitle, String message)
                         throws MessagingException;
 
-    void sendContactMessage(User user, String message) throws MessagingException;
+    void sendContactMessage(User user, String header, String message) throws MessagingException;
 }
