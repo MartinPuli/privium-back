@@ -65,6 +65,9 @@ public interface IListingRepository extends JpaRepository<Listing, Integer> {
             @Param("page") Integer page,
             @Param("pageSize") Integer pageSize) throws SQLException;
 
+    @Query(value = "CALL GetListingById(:listingId)", nativeQuery = true)
+    Listing getListingById(@Param("listingId") Long listingId) throws SQLException;
+
     @Query(value = "CALL GetAuxImages(:listingId)", nativeQuery = true)
     List<IListingImageDto> getAuxImages(@Param("listingId") Long listingId) throws SQLException;
 

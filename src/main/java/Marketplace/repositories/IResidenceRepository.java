@@ -13,6 +13,8 @@ import java.util.List;
 @Repository
 public interface IResidenceRepository extends JpaRepository<ResidenceProof, Long> {
 
-    @Query(value = "CALL GetResidenceProofs (:userId)", nativeQuery = true)
-    List<IResidenceProofDto> getResidenceProofs(@Param("userId") Long userId);
+    @Query(value = "CALL GetResidenceProofs (:adminId, :userId)", nativeQuery = true)
+    List<IResidenceProofDto> getResidenceProofs(
+        @Param("adminId") Long adminId,
+        @Param("userId") Long userId);
 }

@@ -41,7 +41,7 @@ public class AdminController {
     @PostMapping(value = "/deleteListing", headers = TextConstant.APPLICATION_JSON)
     public ResponseEntity<ResponseDto> deleteListing(
             @RequestHeader(TextConstant.USER_HEADER) Long adminId,
-            @RequestBody ListingAdminRequestDto request) throws Exception {
+            @RequestBody ListingAdminRequestDto request) throws Exception, MessagingException {
 
         log.info(LOG_TXT + DELETE_LISTING_TXT + " Eliminando listingId={} por admin {}", request.getListingId(), adminId);
 

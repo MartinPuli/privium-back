@@ -60,28 +60,21 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public ResponseDto deleteListing(Long adminId, ListingAdminRequestDto req) throws Exception {
+    public ResponseDto deleteListing(Long adminId, ListingAdminRequestDto req) throws SQLException, MessagingException {
         validateAdmin(adminId);
 
         log.info(LOG_TXT + DELETE_TXT + " Eliminando listingId={} por admin {}", req.getListingId(), adminId);
 
-        Listing listing = listingRepository.findById(req.getListingId()).orElse(null);
-        if (listing == null) {
-            return ResponseDto.builder().code(404).description("Publicación no encontrada").build();
-        }
+        Listing listing = listingRepository.getListingById(req.getListingId());
+
+        User owner = userRepository.findById(req.getOwnerId());
 
         ListingRequestDto statusReq = new ListingRequestDto();
         statusReq.setListingId(req.getListingId());
         statusReq.setAction("DELETE");
         ResponseDto resp = listingCUDService.manageStatus(statusReq);
 
-        if (resp != null && (resp.getCode() == 0 || resp.getCode() == 200)) {
-            try {
-                emailService.sendListingDeletionEmail(listing.getOwner(), listing.getTitle(), req.getMessage());
-            } catch (MessagingException e) {
-                log.error(LOG_TXT + DELETE_TXT + " Error enviando correo", e);
-            }
-        }
+        emailService.sendListingDeletionEmail(owner, listing.getTitle(), req.getMessage());
 
         return resp;
     }

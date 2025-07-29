@@ -35,11 +35,11 @@ public class ResidenceServiceImpl implements ResidenceService {
     private IUserRepository userRepository;
 
     @Override
-    public ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long userId) throws SQLException {
-        log.info(LOG_TXT + GET_PROOFS_TXT + "Recuperando pruebas de residencia, userId={}", userId);
+    public ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long adminId) throws SQLException {
+        log.info(LOG_TXT + GET_PROOFS_TXT + "Recuperando pruebas de residencia, userId={}", adminId);
 
         // 1) Proyecciones desde la base
-        List<IResidenceProofDto> projections = residenceRepository.getResidenceProofs(userId);
+        List<IResidenceProofDto> projections = residenceRepository.getResidenceProofs(adminId, null);
 
         // 2) Construcción manual de lista de DTOs
         List<ResidenceProofResponseDto> dtos = new ArrayList<>();

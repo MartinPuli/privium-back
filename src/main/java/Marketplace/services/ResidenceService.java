@@ -8,5 +8,5 @@ import Marketplace.commons.dtos.ResponseDataDto;
 import Marketplace.dtos.response.ResidenceProofResponseDto;
 
 public interface ResidenceService {
-    ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long userId) throws SQLException;
+    ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long adminId) throws SQLException;
 }

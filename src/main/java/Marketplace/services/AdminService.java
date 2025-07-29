@@ -9,5 +9,5 @@ import java.sql.SQLException;
 
 public interface AdminService {
     ResponseDto approveResidence(Long adminId, UserRequestDto req) throws SQLException, MessagingException;
-    ResponseDto deleteListing(Long adminId, ListingAdminRequestDto req) throws Exception;
+    ResponseDto deleteListing(Long adminId, ListingAdminRequestDto req) throws SQLException, MessagingException;
 }
