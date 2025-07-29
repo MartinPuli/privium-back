@@ -162,4 +162,22 @@ public class EmailServiceImpl implements EmailService {
                 sender.send(msg);
         }
 
+        @Override
+        public void sendContactMessage(User user, String message) throws MessagingException {
+                MimeMessage msg = sender.createMimeMessage();
+                MimeMessageHelper h = new MimeMessageHelper(msg, true);
+
+                h.setFrom("priviumcontacto@gmail.com");
+                h.setTo("mpulitano1701@gmail.com");
+
+                String subject = user.getName() + " " + user.getLastName();
+                if (user.getCountry() != null && user.getCountry().getName() != null) {
+                        subject += " (" + user.getCountry().getName() + ")";
+                }
+                h.setSubject(subject);
+
+                h.setText(message, false);
+                sender.send(msg);
+        }
+
 }
