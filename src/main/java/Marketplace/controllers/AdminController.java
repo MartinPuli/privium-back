@@ -65,7 +65,7 @@ public class AdminController {
         return ResponseEntity.ok(resp);
     }
 
-    @PostMapping(value = "/deleteListing", headers = TextConstant.APPLICATION_JSON)
+    /*@PostMapping(value = "/deleteListing", headers = TextConstant.APPLICATION_JSON)
     public ResponseEntity<ResponseDto> deleteListing(
             @RequestHeader(TextConstant.USER_HEADER) Long adminId,
             @RequestBody ListingAdminRequestDto request) throws Exception {
@@ -90,8 +90,8 @@ public class AdminController {
             } catch (MessagingException e) {
                 log.error(LOG_TXT + DELETE_LISTING_TXT + " Error enviando correo", e);
             }
-        }
+        } 
 
         return ResponseEntity.ok(resp);
-    }
+    }*/
 }
