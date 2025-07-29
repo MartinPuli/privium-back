@@ -18,4 +18,13 @@ public interface ListingCUDService {
             MultipartFile image4) throws Exception;
 
     ResponseDto manageStatus(ListingRequestDto request) throws SQLException;
+
+    /**
+     * Elimina una imagen auxiliar de una publicación.
+     *
+     * @param listingId   id de la publicación
+     * @param imageNumber número de imagen (1-4)
+     * @return respuesta genérica con el resultado
+     */
+    ResponseDto deleteListingImage(Long listingId, Integer imageNumber) throws Exception;
 }
