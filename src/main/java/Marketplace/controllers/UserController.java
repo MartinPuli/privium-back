@@ -1,8 +1,10 @@
 package Marketplace.controllers;
 
 import Marketplace.commons.constants.TextConstant;
+import Marketplace.commons.dtos.ResponseDataDto;
 import Marketplace.commons.dtos.ResponseDto;
 import Marketplace.dtos.request.UserRequestDto;
+import Marketplace.models.User;
 import Marketplace.services.UserService;
 
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ public class UserController {
     private static final String PIC_TXT = "[manageProfilePicture]";
     private static final String UPDATE_TXT = "[updateUser]";
     private static final String DELETE_TXT = "[deleteUser]";
+    private static final String GET_TXT = "[getUserById]";
 
     @Autowired
     private UserService userService;
@@ -71,6 +74,19 @@ public class UserController {
         log.info(LOG_TXT + DELETE_TXT +
                  " Code: {}, Description: {}",
                  resp.getCode(), resp.getDescription());
+
+        return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ResponseDataDto<User>> getUserById(
+            @PathVariable("userId") Long userId) throws SQLException {
+
+        log.info(LOG_TXT + GET_TXT + " Buscando usuario {}", userId);
+
+        ResponseDataDto<User> resp = userService.getUserById(userId);
+
+        log.info(LOG_TXT + GET_TXT + " Code: {}, Description: {}", resp.getCode(), resp.getDescription());
 
         return ResponseEntity.ok(resp);
     }
