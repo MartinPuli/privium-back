@@ -10,11 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import Marketplace.commons.constants.TextConstant;
 import Marketplace.commons.dtos.ResponseDataDto;
-import Marketplace.commons.dtos.ResponseDto;
-import Marketplace.dtos.request.UserRequestDto;
 import Marketplace.dtos.response.ResidenceProofResponseDto;
 import Marketplace.services.ResidenceService;
-import jakarta.mail.MessagingException;
 
 /**
  * Controller para endpoints de gestión de pruebas de residencia.
@@ -48,19 +45,4 @@ public class ResidenceController {
         return ResponseEntity.ok(serviceResponse);
     }
 
-    @PostMapping(value = "/approveResidence", headers = TextConstant.APPLICATION_JSON)
-    public ResponseEntity<ResponseDto> approveResidence(
-            @RequestHeader(TextConstant.USER_HEADER) Long idUser,
-            @RequestBody UserRequestDto request) throws SQLException, MessagingException {
-
-        log.info(LOG_TXT + APPROVE_TXT + " Aprobando/rechazando residencia.");
-
-        ResponseDto serviceResponse = residenceService.approveResidence(idUser, request);
-
-        log.info(LOG_TXT + APPROVE_TXT +
-                " Resultado aprobación. Code: {}, Description: {}",
-                serviceResponse.getCode(), serviceResponse.getDescription());
-
-        return ResponseEntity.ok(serviceResponse);
-    }
 }
