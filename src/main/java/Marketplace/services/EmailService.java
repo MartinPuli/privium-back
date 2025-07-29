@@ -20,4 +20,7 @@ public interface EmailService {
 
     public void sendResidenceDecisionEmail(User user, boolean approved)
                         throws MessagingException;
+
+    void sendListingDeletionEmail(User owner, String listingTitle, String message)
+                        throws MessagingException;
 }

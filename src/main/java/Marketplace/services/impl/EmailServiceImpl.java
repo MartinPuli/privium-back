@@ -128,7 +128,7 @@ public class EmailServiceImpl implements EmailService {
         }
 
         @Override
-        public void sendResidenceDecisionEmail(User user, boolean approved)
+    public void sendResidenceDecisionEmail(User user, boolean approved)
                         throws MessagingException {
 
                 MimeMessage msg = sender.createMimeMessage();
@@ -157,6 +157,33 @@ public class EmailServiceImpl implements EmailService {
                                 approved
                                                 ? "<p>Ya podés operar dentro de tu comunidad privada.</p>"
                                                 : "<p>Revisa la documentación y vuelve a intentarlo.</p>");
+
+                h.setText(html, true);
+                sender.send(msg);
+        }
+
+        @Override
+        public void sendListingDeletionEmail(User owner, String listingTitle, String message)
+                        throws MessagingException {
+
+                MimeMessage msg = sender.createMimeMessage();
+                MimeMessageHelper h = new MimeMessageHelper(msg, true);
+
+                h.setFrom("priviumcontacto@gmail.com");
+                h.setTo(owner.getEmail().trim());
+                h.setSubject("Publicación eliminada – Privium Marketplace");
+
+                String html = String.format(
+                                "<html><body>" +
+                                "<h2>¡Hola %s %s!</h2>" +
+                                "<p>Tu publicación <strong>%s</strong> ha sido eliminada por un administrador.</p>" +
+                                "%s" +
+                                "<br/>" +
+                                "<p>Saludos cordiales,<br/>" +
+                                "El equipo de Privium Marketplace</p>" +
+                                "</body></html>",
+                                owner.getName(), owner.getLastName(), listingTitle,
+                                message != null ? "<p>" + message + "</p>" : "");
 
                 h.setText(html, true);
                 sender.send(msg);
