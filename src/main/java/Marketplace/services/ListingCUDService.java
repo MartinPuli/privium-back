@@ -4,7 +4,6 @@ import Marketplace.commons.dtos.ResponseDto;
 import Marketplace.dtos.request.ListingRequestDto;
 
 import java.sql.SQLException;
-import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,7 +12,10 @@ public interface ListingCUDService {
             Long userId,
             ListingRequestDto request,
             MultipartFile mainImage,
-            List<MultipartFile> images) throws Exception;
+            MultipartFile image1,
+            MultipartFile image2,
+            MultipartFile image3,
+            MultipartFile image4) throws Exception;
 
     ResponseDto manageStatus(ListingRequestDto request) throws SQLException;
 }

@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +37,10 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             Long userId,
             ListingRequestDto req,
             MultipartFile mainImage,
-            List<MultipartFile> images) throws Exception {
+            MultipartFile image1,
+            MultipartFile image2,
+            MultipartFile image3,
+            MultipartFile image4) throws Exception {
 
         log.info(LOG_TXT + EDIT_TXT + " Editando publicacion listingId={}",req.getListingId());
 
@@ -62,22 +64,16 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                 current != null ? current.getAux4() : null
         };
 
-        if (images != null) {
-            for (int i = 0; i < 4; i++) {
-                MultipartFile part = (i < images.size()) ? images.get(i) : null;
+        boolean imagesChanged = false;
 
-                if (part == null) {
-                    // Viene null explícito -> borrar si existía
-                    if (finalAux[i] != null) {
-                        s3Service.deleteFile(s3Service.extractKey(finalAux[i]));
-                        finalAux[i] = null;
-                    }
-                } else {
-                    // Reemplazo por nuevo archivo
-                    if (finalAux[i] != null)
-                        s3Service.deleteFile(s3Service.extractKey(finalAux[i]));
-                    finalAux[i] = s3Service.uploadFile(part);
-                }
+        MultipartFile[] parts = { image1, image2, image3, image4 };
+        for (int i = 0; i < parts.length; i++) {
+            MultipartFile part = parts[i];
+            if (part != null) {
+                imagesChanged = true;
+                if (finalAux[i] != null)
+                    s3Service.deleteFile(s3Service.extractKey(finalAux[i]));
+                finalAux[i] = s3Service.uploadFile(part);
             }
         }
 
@@ -104,7 +100,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                 req.getType(), req.getBrand(), catsCsv);
 
         /* Auxiliares en BD (si hubo cambios) */
-        if (images != null) {
+        if (imagesChanged) {
             listingCUDRepository.setAuxImages(req.getListingId(), imgsCsv);
         }
 

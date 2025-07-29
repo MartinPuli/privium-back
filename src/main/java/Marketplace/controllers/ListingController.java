@@ -100,10 +100,13 @@ public class ListingController {
                         @RequestHeader(TextConstant.USER_HEADER) Long idUser,
                         @RequestPart("data") @Valid ListingRequestDto request,
                         @RequestPart(value = "mainImage", required = false) MultipartFile mainImage,
-                        @RequestPart(value = "images", required = false) @Size(max = 4, message = "Máximo 4 imágenes auxiliares") List<MultipartFile> images)
+                        @RequestPart(value = "image1", required = false) MultipartFile image1,
+                        @RequestPart(value = "image2", required = false) MultipartFile image2,
+                        @RequestPart(value = "image3", required = false) MultipartFile image3,
+                        @RequestPart(value = "image4", required = false) MultipartFile image4)
                         throws Exception {
                 log.info(LOG_TXT + EDIT_TXT + " Inicia edición de publicación id={}", request.getListingId());
-                ResponseDto resp = listingCUDService.editListingWithImages(idUser, request, mainImage, images);
+                ResponseDto resp = listingCUDService.editListingWithImages(idUser, request, mainImage, image1, image2, image3, image4);
                 log.info(LOG_TXT + EDIT_TXT + " Finaliza edición de publicación. result={}", resp);
                 return ResponseEntity.ok(resp);
         }
