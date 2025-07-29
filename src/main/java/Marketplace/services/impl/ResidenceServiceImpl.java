@@ -10,17 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import Marketplace.commons.dtos.ResponseDataDto;
-import Marketplace.commons.dtos.ResponseDto;
-import Marketplace.dtos.request.UserRequestDto;
 import Marketplace.dtos.response.ResidenceProofResponseDto;
 import Marketplace.models.User;
 import Marketplace.projections.IResidenceProofDto;
-import Marketplace.repositories.IAuthRepository;
 import Marketplace.repositories.IResidenceRepository;
 import Marketplace.repositories.IUserRepository;
-import Marketplace.services.EmailService;
 import Marketplace.services.ResidenceService;
-import jakarta.mail.MessagingException;
 
 /**
  * Implementación del servicio de gestión de pruebas de residencia.
@@ -32,19 +27,12 @@ public class ResidenceServiceImpl implements ResidenceService {
     private static final Logger log = LoggerFactory.getLogger(ResidenceServiceImpl.class);
     private static final String LOG_TXT = "ResidenceService";
     private static final String GET_PROOFS_TXT = "[getResidenceProofs]";
-    private static final String APPROVE_TXT = "[approveResidence]";
 
     @Autowired
     private IResidenceRepository residenceRepository;
 
     @Autowired
-    private IAuthRepository authRepository;
-
-    @Autowired
     private IUserRepository userRepository;
-
-    @Autowired
-    private EmailService emailService;
 
     @Override
     public ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long userId) throws SQLException {
@@ -70,23 +58,4 @@ public class ResidenceServiceImpl implements ResidenceService {
                 .build();
     }
 
-    @Override
-    public ResponseDto approveResidence(Long executorId,
-            UserRequestDto req) throws SQLException, MessagingException {
-
-        log.info(LOG_TXT + APPROVE_TXT + "Aprovando prueba de residencia, userId={}", req.getIdUser());
-
-        ResponseDto dbResp = authRepository.approveResidence(
-                executorId,
-                req.getIdUser(),
-                req.getApproved() ? 1 : 0);
-
-        User user = userRepository.findById(req.getIdUser());
-
-        emailService.sendResidenceDecisionEmail(user, req.getApproved());
-
-
-        log.info(LOG_TXT + APPROVE_TXT + "Prueba de residencia aprobada");
-        return dbResp;
-    }
 }
