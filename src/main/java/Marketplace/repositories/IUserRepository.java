@@ -12,21 +12,22 @@ import java.util.Optional;
 @Repository
 public interface IUserRepository extends JpaRepository<User, Integer> {
     
-    @Query(value = "EXEC CreateUser :name, :lastname, :email, :passwordHash, :dni, :countryId, :phone, :proofMessage, :proofImage", nativeQuery = true)
-    User createUser(@Param("name") String name,
-            @Param("lastname") String lastname,
-            @Param("email") String email,
-            @Param("passwordHash") String passwordHash,
-            @Param("dni") String dni,
-            @Param("countryId") Long countryId,
-            @Param("phone") String phone,
-            @Param("proofMessage") String proofMessage,
-            @Param("proofImage") String proofImage);
+    @Query(value = "CALL CreateUser(:name, :lastname, :email, :passwordHash, :dni, :countryId, :phone, :proofMessage, :proofImage)", nativeQuery = true)
+    User createUser(
+        @Param("name") String name,
+        @Param("lastname") String lastname,
+        @Param("email") String email,
+        @Param("passwordHash") String passwordHash,
+        @Param("dni") String dni,
+        @Param("countryId") Long countryId,
+        @Param("phone") String phone,
+        @Param("proofMessage") String proofMessage,
+        @Param("proofImage") String proofImage
+    );
 
-    @Query(value = "EXEC GetUserByEmail :email", nativeQuery = true)
+    @Query(value = "CALL GetUserByEmail(:email)", nativeQuery = true)
     Optional<User> findByEmail(@Param("email") String email) throws SQLException;
 
-    @Query(value = "EXEC GetUserById :id", nativeQuery = true)
+    @Query(value = "CALL GetUserById(:id)", nativeQuery = true)
     User findById(@Param("id") Long id) throws SQLException;
-
 }

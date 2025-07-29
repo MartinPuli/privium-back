@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ICountryRepository extends JpaRepository<Country, Long> {
-    @Query(value = "EXEC dbo.GetCountries :id", nativeQuery = true)
+    @Query(value = "CALL GetCountries (:id)", nativeQuery = true)
     List<ICountryDto> getCountries(
         @Param("id") Long id
     );

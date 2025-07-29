@@ -9,18 +9,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IUserCUDRepository extends JpaRepository<ResponseDto, Integer> {
 
-    @Query(value = "EXEC ManageProfilePicture :userId, :profilePicture", nativeQuery = true)
+    @Query(value = "CALL ManageProfilePicture(:userId, :profilePicture)", nativeQuery = true)
     ResponseDto manageProfilePicture(
         @Param("userId") Long userId,
         @Param("profilePicture") String profilePicture
     );
 
-    @Query(value = "EXEC UpdateUser :userId, :phone", nativeQuery = true)
+    @Query(value = "CALL UpdateUser(:userId, :phone)", nativeQuery = true)
     ResponseDto updateUser(
         @Param("userId") Long userId,
         @Param("phone") String phone
     );
 
-    @Query(value = "EXEC DeleteUser :userId", nativeQuery = true)
+    @Query(value = "CALL DeleteUser(:userId)", nativeQuery = true)
     ResponseDto deleteUser(@Param("userId") Long userId);
 }
