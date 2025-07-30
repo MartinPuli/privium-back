@@ -4,7 +4,7 @@ import Marketplace.commons.constants.TextConstant;
 import Marketplace.commons.dtos.ResponseDataDto;
 import Marketplace.commons.dtos.ResponseDto;
 import Marketplace.dtos.request.UserRequestDto;
-import Marketplace.models.User;
+import Marketplace.dtos.response.UserResponseDto;
 import Marketplace.services.UserService;
 
 import org.slf4j.Logger;
@@ -79,12 +79,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ResponseDataDto<User>> getUserById(
+    public ResponseEntity<ResponseDataDto<UserResponseDto>> getUserById(
             @PathVariable("userId") Long userId) throws SQLException {
 
         log.info(LOG_TXT + GET_TXT + " Buscando usuario {}", userId);
 
-        ResponseDataDto<User> resp = userService.getUserById(userId);
+        ResponseDataDto<UserResponseDto> resp = userService.getUserById(userId);
 
         log.info(LOG_TXT + GET_TXT + " Code: {}, Description: {}", resp.getCode(), resp.getDescription());
 
