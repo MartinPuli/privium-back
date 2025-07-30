@@ -9,6 +9,7 @@ import Marketplace.commons.dtos.ResponseDataDto;
 import Marketplace.commons.dtos.ResponseDto;
 import Marketplace.dtos.request.UserRequestDto;
 import Marketplace.models.User;
+import Marketplace.dtos.response.UserResponseDto;
 import Marketplace.repositories.IUserCUDRepository;
 import Marketplace.repositories.IUserRepository;
 import Marketplace.services.UserService;
@@ -60,15 +61,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseDataDto<User> getUserById(Long userId) throws SQLException {
+    public ResponseDataDto<UserResponseDto> getUserById(Long userId) throws SQLException {
         log.info(LOG_TXT + GET_TXT + " UserId: {}", userId);
 
         User user = userRepository.findById(userId);
 
-        return ResponseDataDto.<User>builder()
+        return ResponseDataDto.<UserResponseDto>builder()
                 .code(user != null ? 200 : 404)
                 .description(user != null ? "Usuario encontrado" : "Usuario no encontrado")
-                .data(user)
+                .data(user != null ? UserResponseDto.fromEntity(user) : null)
                 .build();
     }
 }

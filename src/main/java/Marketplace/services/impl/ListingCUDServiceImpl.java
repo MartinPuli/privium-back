@@ -15,7 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,66 +47,108 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             MultipartFile image3,
             MultipartFile image4) throws Exception {
 
-        log.info(LOG_TXT + EDIT_TXT + " Editando publicacion listingId={}", req.getListingId());
+        log.info("{} EDIT → editing listingId={}", LOG_TXT, req.getListingId());
 
-        // ── URLs actuales ─────────────────────────────────────
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 1) Fotos actuales
+         * ───────────────────────────────────────────────────────────
+         */
         IListingImagesUrlsDto current = listingRepository.getListingImages(req.getListingId());
 
-        // ── Principal ─────────────────────────────────────────
-        String finalMain = (current != null) ? current.getMainImage() : null;
-        if (mainImage != null) {
-            // Subir primero, borrar después (evita quedar sin imagen si falla el upload)
-            String newMain = s3Service.uploadFile(mainImage);
-            if (finalMain != null) {
-                s3Service.deleteFile(s3Service.extractKey(finalMain));
-            }
-            finalMain = newMain;
-        }
-
-        // ── Auxiliares (máx 4) ────────────────────────────────
-        String[] finalAux = {
+        String currentMain = current != null ? current.getMainImage() : null;
+        String[] currentAux = {
                 current != null ? current.getAux1() : null,
                 current != null ? current.getAux2() : null,
                 current != null ? current.getAux3() : null,
                 current != null ? current.getAux4() : null
         };
 
-        boolean imagesChanged = false;
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 2) Portada
+         * ───────────────────────────────────────────────────────────
+         */
+        String finalMain = currentMain;
+
+        if (mainImage != null) { // nueva portada por archivo
+            String uploaded = s3Service.uploadFile(mainImage);
+            if (currentMain != null) {
+                s3Service.deleteFile(s3Service.extractKey(currentMain));
+            }
+            finalMain = uploaded;
+        } else if (req.getMainImage() != null // portada enviada como string distinta
+                && !req.getMainImage().equals(currentMain)) {
+            finalMain = req.getMainImage();
+        }
+        /* Caso contrario: portada sin cambios */
+
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 3) Auxiliares (4 slots exactos)
+         * ───────────────────────────────────────────────────────────
+         */
+        String[] finalAux = Arrays.copyOf(currentAux, 4);
         MultipartFile[] parts = { image1, image2, image3, image4 };
-        for (int i = 0; i < parts.length; i++) {
-            MultipartFile part = parts[i];
-            if (part != null) {
+        List<String> reqUrls = req.getImagesUrl(); // puede ser null
+
+        boolean imagesChanged = false;
+
+        for (int i = 0; i < 4; i++) {
+            String desiredUrl = finalAux[i]; // por defecto “lo que hay”
+
+            // a) Si vino array de URLS → ese es el estado deseado (url o null)
+            if (reqUrls != null) {
+                desiredUrl = reqUrls.get(i); // puede ser null
+            }
+
+            // b) Si vino archivo → reemplaza sí o sí al slot
+            if (parts[i] != null) {
                 imagesChanged = true;
                 if (finalAux[i] != null) {
                     s3Service.deleteFile(s3Service.extractKey(finalAux[i]));
                 }
-                finalAux[i] = s3Service.uploadFile(part);
+                desiredUrl = s3Service.uploadFile(parts[i]);
+            }
+            // c) Sin archivo, pero desiredUrl == null y había algo → borrar
+            else if (desiredUrl == null && currentAux[i] != null) {
+                imagesChanged = true;
+                s3Service.deleteFile(s3Service.extractKey(currentAux[i]));
+            }
+
+            finalAux[i] = desiredUrl; // queda estado final del slot
+        }
+
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 4) CSV auxiliares (solo si cambió al menos un slot)
+         * ───────────────────────────────────────────────────────────
+         */
+        String imgsCsv = null;
+        if (imagesChanged) {
+            String sep = String.valueOf((char) 31); // CHAR(31)
+            imgsCsv = Arrays.stream(finalAux)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(sep));
+            if (imgsCsv.isEmpty()) {
+                imgsCsv = null; // pasar null para borrar todos
             }
         }
 
-        // ── CSV de categorías y auxiliares ────────────────────
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 5) CSV categorías
+         * ───────────────────────────────────────────────────────────
+         */
         String catsCsv = (req.getCategoriesId() == null)
                 ? null
                 : String.join(",", req.getCategoriesId());
 
-        // Sólo construir imgsCsv si efectivamente vamos a persistir cambios de
-        // auxiliares
-        String imgsCsv = null;
-        if (imagesChanged) {
-            String imgSep = String.valueOf((char) 31); // CHAR(31)
-            imgsCsv = Arrays.stream(finalAux)
-                    .filter(Objects::nonNull) // evita NPE
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty()) // ignora vacíos
-                    .collect(Collectors.joining(imgSep));
-            if (imgsCsv.isEmpty()) {
-                // Si después del filtrado no queda nada, pasamos null para que el SP borre las
-                // auxiliares
-                imgsCsv = null;
-            }
-        }
-
-        // ── Guardar publicación ───────────────────────────────
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 6) Guardar publicación principal
+         * ───────────────────────────────────────────────────────────
+         */
         ResponseDto response = listingCUDRepository.editListing(
                 req.getListingId(),
                 req.getTitle(),
@@ -114,7 +159,11 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                 req.getAcceptsTransfer(), req.getAcceptsCard(),
                 req.getType(), req.getBrand(), catsCsv);
 
-        // Persistir auxiliares sólo si hubo cambios en archivos
+        /*
+         * ──────────────────────────────────────────────────────────────
+         * 7) Guardar auxiliares (solo si hubo cambios)
+         * ───────────────────────────────────────────────────────────
+         */
         if (imagesChanged) {
             listingCUDRepository.setAuxImages(req.getListingId(), imgsCsv);
         }

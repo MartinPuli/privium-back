@@ -32,7 +32,7 @@ public class ListingRequestDto implements Serializable {
     private Boolean acceptsCard;
     private String type; // "PRODUCTO" o "SERVICIO"
     private List<String> categoriesId;
-    private List<String> imagesURL;
+    private List<String> imagesUrl;
 
     private Integer condition;
     private String brand;
