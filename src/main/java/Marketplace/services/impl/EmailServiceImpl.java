@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import Marketplace.models.EmailConfirmationToken;
 import Marketplace.models.PasswordResetToken;
 import Marketplace.models.User;
+import Marketplace.projections.ICountryDto;
 import Marketplace.services.EmailService;
 
 @Service
@@ -190,7 +191,7 @@ public class EmailServiceImpl implements EmailService {
         }
 
         @Override
-        public void sendContactMessage(User user, String header, String message) throws MessagingException {
+        public void sendContactMessage(User user, String header, String message, ICountryDto country) throws MessagingException {
                 MimeMessage msg = sender.createMimeMessage();
                 MimeMessageHelper h = new MimeMessageHelper(msg, true);
 
@@ -202,9 +203,9 @@ public class EmailServiceImpl implements EmailService {
                         subject.append(header).append(" - ");
                 }
                 subject.append(user.getName()).append(" ").append(user.getLastName());
-                if (user.getCountry() != null && user.getCountry().getName() != null) {
-                        subject.append(" (").append(user.getCountry().getName()).append(")");
-                }
+
+                subject.append(" (").append(country.getName()).append(")");
+
                 h.setSubject(subject.toString());
 
                 h.setText(message, false);

@@ -11,8 +11,11 @@ import org.springframework.stereotype.Service;
 
 import Marketplace.commons.dtos.ResponseDataDto;
 import Marketplace.dtos.response.ResidenceProofResponseDto;
+import Marketplace.models.Country;
 import Marketplace.models.User;
+import Marketplace.projections.ICountryDto;
 import Marketplace.projections.IResidenceProofDto;
+import Marketplace.repositories.ICountryRepository;
 import Marketplace.repositories.IResidenceRepository;
 import Marketplace.repositories.IUserRepository;
 import Marketplace.services.ResidenceService;
@@ -34,6 +37,9 @@ public class ResidenceServiceImpl implements ResidenceService {
     @Autowired
     private IUserRepository userRepository;
 
+    @Autowired
+    private ICountryRepository countryRepository;
+
     @Override
     public ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long adminId) throws SQLException {
         log.info(LOG_TXT + GET_PROOFS_TXT + "Recuperando pruebas de residencia, userId={}", adminId);
@@ -46,8 +52,9 @@ public class ResidenceServiceImpl implements ResidenceService {
         for (IResidenceProofDto p : projections) {
 
             User user = userRepository.findById(p.getUserId());
+            List<ICountryDto> country = countryRepository.getCountries(user.getCountryId());
 
-            ResidenceProofResponseDto dto = ResidenceProofResponseDto.fromProjectionAndUser(p, user);
+            ResidenceProofResponseDto dto = ResidenceProofResponseDto.fromProjectionAndUser(p, user, country.get(0));
             dtos.add(dto);
         }
 

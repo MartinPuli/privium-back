@@ -39,8 +39,8 @@ public interface IListingRepository extends JpaRepository<Listing, Integer> {
     @Query(value = "CALL ListListings(" +
             ":userId, :status, :searchTerm, :createdFrom, :createdTo, :categoryIds, :sortOrder, " +
             ":countryId, :centerCountryId, :maxDistanceKm, :conditionFilter, :brandFilter, :typeFilter, " +
-            ":acceptsBarter, :acceptsCash, :acceptsTransfer, :acceptsCard, :minPrice, :maxPrice, :notShownUser, " +
-            ":page, :pageSize)", nativeQuery = true)
+            ":acceptsBarter, :acceptsCash, :acceptsTransfer, :acceptsCard, :minPrice, :maxPrice, " +
+            ":listingId, :notShownListing, :notShownUser, :page, :pageSize)", nativeQuery = true)
     List<IListingDto> listListings(
             @Param("userId") Long userId,
             @Param("status") Integer status,
@@ -61,6 +61,8 @@ public interface IListingRepository extends JpaRepository<Listing, Integer> {
             @Param("acceptsCard") Boolean acceptsCard,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
+            @Param("listingId") Long listingId,
+            @Param("notShownListing") Long notShownListing,
             @Param("notShownUser") Long notShownUser,
             @Param("page") Integer page,
             @Param("pageSize") Integer pageSize) throws SQLException;

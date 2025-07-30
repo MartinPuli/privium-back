@@ -42,9 +42,8 @@ public class User {
     @Column(nullable = false)
     private Integer status = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id", foreignKey = @ForeignKey(name = "fk_user_country"))
-    private Country country;
+    @Column(name = "country_id", nullable = false)
+    private Long countryId;
 
     @Column(name = "profile_picture", length = 255)
     private String profilePicture;

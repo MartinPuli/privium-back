@@ -34,7 +34,7 @@ public class JwtUtil {
     claims.put("lastname",     user.getLastName());
     claims.put("dni",          user.getDni());
     claims.put("email",        user.getEmail());
-    claims.put("countryId",    user.getCountry().getId());
+    claims.put("countryId",    user.getCountryId());
     claims.put("role",         user.getRole());
     claims.put("contactPhone", user.getContactPhone());
 

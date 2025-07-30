@@ -3,6 +3,8 @@ package Marketplace.services.impl;
 import Marketplace.commons.dtos.ResponseDto;
 import Marketplace.dtos.request.ContactRequestDto;
 import Marketplace.models.User;
+import Marketplace.projections.ICountryDto;
+import Marketplace.repositories.ICountryRepository;
 import Marketplace.repositories.IUserRepository;
 import Marketplace.services.ContactService;
 import Marketplace.services.EmailService;
@@ -26,13 +28,17 @@ public class ContactServiceImpl implements ContactService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private ICountryRepository countryRepository;
+
     @Override
     public ResponseDto sendContactMessage(Long userId, ContactRequestDto request) throws SQLException, MessagingException {
         log.info(LOG_TXT + SEND_TXT + " Enviando mensaje de contacto userId={} msgHeader={} msg={}",
                 userId, request.getMessageHeader(), request.getMessage());
 
         User user = userRepository.findById(userId);
-        emailService.sendContactMessage(user, request.getMessageHeader(), request.getMessage());
+        ICountryDto country = countryRepository.getCountries(user.getCountryId()).get(0);
+        emailService.sendContactMessage(user, request.getMessageHeader(), request.getMessage(), country);
 
         return ResponseDto.builder()
                 .code(200)

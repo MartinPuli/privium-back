@@ -35,13 +35,13 @@ public class UserController {
             @RequestBody UserRequestDto request) throws SQLException {
 
         log.info(LOG_TXT + PIC_TXT + "Actualizando foto de perfil del usuario",
-                 idUser, request.getProfilePicture());
+                idUser, request.getProfilePicture());
 
         ResponseDto resp = userService.manageProfilePicture(idUser, request);
 
         log.info(LOG_TXT + PIC_TXT +
-                 " Code: {}, Description: {}",
-                 resp.getCode(), resp.getDescription());
+                " Code: {}, Description: {}",
+                resp.getCode(), resp.getDescription());
 
         return ResponseEntity.ok(resp);
     }
@@ -52,13 +52,13 @@ public class UserController {
             @RequestBody UserRequestDto request) throws SQLException {
 
         log.info(LOG_TXT + UPDATE_TXT + "Actualizando usuario",
-                 idUser, request.getName(), request.getLastname(), request.getPhone());
+                idUser, request.getName(), request.getLastname(), request.getPhone());
 
         ResponseDto resp = userService.updateUser(idUser, request);
 
         log.info(LOG_TXT + UPDATE_TXT +
-                 " Code: {}, Description: {}",
-                 resp.getCode(), resp.getDescription());
+                " Code: {}, Description: {}",
+                resp.getCode(), resp.getDescription());
 
         return ResponseEntity.ok(resp);
     }
@@ -72,14 +72,15 @@ public class UserController {
         ResponseDto resp = userService.deleteUser(idUser);
 
         log.info(LOG_TXT + DELETE_TXT +
-                 " Code: {}, Description: {}",
-                 resp.getCode(), resp.getDescription());
+                " Code: {}, Description: {}",
+                resp.getCode(), resp.getDescription());
 
         return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<ResponseDataDto<User>> getUserById(
+            @RequestHeader(TextConstant.USER_HEADER) Long idUser,
             @PathVariable("userId") Long userId) throws SQLException {
 
         log.info(LOG_TXT + GET_TXT + " Buscando usuario {}", userId);

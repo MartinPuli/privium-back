@@ -5,6 +5,7 @@ import java.io.IOException;
 import Marketplace.models.EmailConfirmationToken;
 import Marketplace.models.PasswordResetToken;
 import Marketplace.models.User;
+import Marketplace.projections.ICountryDto;
 import jakarta.mail.MessagingException;
 
 public interface EmailService {
@@ -24,5 +25,5 @@ public interface EmailService {
     void sendListingDeletionEmail(User owner, String listingTitle, String message)
                         throws MessagingException;
 
-    void sendContactMessage(User user, String header, String message) throws MessagingException;
+    public void sendContactMessage(User user, String header, String message, ICountryDto country) throws MessagingException;
 }

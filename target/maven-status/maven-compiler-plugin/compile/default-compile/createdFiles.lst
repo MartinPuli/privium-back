@@ -14,7 +14,10 @@ Marketplace\commons\ErrorMessage.class
 Marketplace\models\ListingImageId.class
 Marketplace\models\PasswordResetToken$PasswordResetTokenBuilder.class
 Marketplace\projections\IListingCategoryDto.class
+Marketplace\dtos\request\ListingAdminRequestDto.class
+Marketplace\controllers\ContactController.class
 Marketplace\projections\ICountryDto.class
+Marketplace\services\impl\AdminServiceImpl.class
 Marketplace\dtos\request\ListingRequestDto$ListingRequestDtoBuilder.class
 Marketplace\services\impl\ListingCUDServiceImpl.class
 Marketplace\dtos\request\ListingRequestDto.class
@@ -47,9 +50,11 @@ Marketplace\dtos\response\CategoryResponseDto$CategoryResponseDtoBuilder.class
 Marketplace\dtos\response\CountryResponseDto$CountryResponseDtoBuilder.class
 Marketplace\models\Country.class
 Marketplace\commons\ErrorMessage$ErrorMessageBuilder.class
+Marketplace\services\impl\ContactServiceImpl.class
 Marketplace\config\S3Config.class
 Marketplace\services\impl\ListingServiceImpl.class
 Marketplace\commons\Parameter.class
+Marketplace\controllers\AdminController.class
 Marketplace\config\jwt\CustomUserDetails.class
 Marketplace\models\ResidenceProof$ResidenceProofBuilder.class
 Marketplace\dtos\response\ListingCategoryResponseDto.class
@@ -63,6 +68,7 @@ Marketplace\services\impl\EmailServiceImpl.class
 Marketplace\services\ListingCUDService.class
 Marketplace\commons\exceptions\BuilderException.class
 Marketplace\models\ListingCategory.class
+Marketplace\dtos\request\ContactRequestDto.class
 Marketplace\dtos\response\ListingResponseDto$ListingResponseDtoBuilder.class
 Marketplace\services\RegisterService.class
 Marketplace\controllers\CountryController.class
@@ -80,10 +86,12 @@ Marketplace\dtos\request\ListListingsRequestDto$ListListingsRequestDtoBuilder.cl
 Marketplace\config\CustomExceptionHandler.class
 Marketplace\dtos\request\ListListingsRequestDto.class
 Marketplace\controllers\ListingController.class
+Marketplace\dtos\request\ContactRequestDto$ContactRequestDtoBuilder.class
 Marketplace\dtos\response\ListingCategoryResponseDto$ListingCategoryResponseDtoBuilder.class
 Marketplace\dtos\response\ListingResponseDto.class
 Marketplace\models\EmailConfirmationToken$EmailConfirmationTokenBuilder.class
 Marketplace\controllers\RegisterController.class
+Marketplace\services\ContactService.class
 Marketplace\dtos\response\ListingInfoResponseDto$ListingInfoResponseDtoBuilder.class
 Marketplace\services\S3Service.class
 Marketplace\repositories\IListingRepository.class
@@ -98,6 +106,8 @@ Marketplace\commons\dtos\ResponseDataDto.class
 Marketplace\commons\ErrorMessage$Builder.class
 Marketplace\models\ListingImage$ListingImageBuilder.class
 Marketplace\commons\dtos\ResponseDataDto$ResponseDataDtoBuilder.class
+Marketplace\dtos\request\ListingAdminRequestDto$ListingAdminRequestDtoBuilder.class
+Marketplace\services\AdminService.class
 Marketplace\models\ListingImage.class
 Marketplace\services\impl\LoginServiceImpl.class
 Marketplace\commons\ApplicationResponse.class

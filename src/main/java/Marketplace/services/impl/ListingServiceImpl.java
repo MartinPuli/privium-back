@@ -82,7 +82,7 @@ public class ListingServiceImpl implements ListingService {
                                 request.getConditionFilter(), request.getBrandFilter(), request.getType(),
                                 request.getAcceptsBarter(), request.getAcceptsCash(), request.getAcceptsTransfer(),
                                 request.getAcceptsCard(), request.getMinPrice(), request.getMaxPrice(),
-                                request.getNotShownUser(), request.getPage(), request.getPageSize());
+                                request.getListingId(), request.getNotShownListing(), request.getNotShownUser(), request.getPage(), request.getPageSize());
 
                 List<ListingResponseDto> data = raw.stream()
                                 .map(ListingResponseDto::convertEntityToDto)

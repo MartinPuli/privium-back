@@ -36,7 +36,8 @@ public class ListListingsRequestDto implements Serializable {
     // Filtros de producto
     private Integer conditionFilter;   // Nuevo nombre para que coincida con @ConditionFilter
     private String  brandFilter;       // Nuevo nombre para que coincida con @BrandFilter
-    private Long    listingId;         // Para listar un aviso puntual
+    private Long    listingId;         // Para listar una publicacion puntual
+    private Long    notShownListing;   // Para excluir una publicacion específica
 
     private String type; 
 

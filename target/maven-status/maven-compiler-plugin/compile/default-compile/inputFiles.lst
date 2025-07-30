@@ -12,7 +12,9 @@ c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\config\jwt\JwtUtil.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\config\S3Config.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\config\SecurityConfig.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\AdminController.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\CategoryController.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\ContactController.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\CountryController.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\ListingController.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\LoginController.java
@@ -20,6 +22,8 @@ c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\ResidenceController.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\controllers\UserController.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\dtos\request\CategoryRequestDto.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\dtos\request\ContactRequestDto.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\dtos\request\ListingAdminRequestDto.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\dtos\request\ListingRequestDto.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\dtos\request\ListListingsRequestDto.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\dtos\request\UserRequestDto.java
@@ -57,10 +61,14 @@ c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\repositories\IResidenceRepository.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\repositories\IUserCUDRepository.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\repositories\IUserRepository.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\AdminService.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\CategoryService.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\ContactService.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\CountryService.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\EmailService.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\impl\AdminServiceImpl.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\impl\CategoryServiceImpl.java
+c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\impl\ContactServiceImpl.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\impl\CountryServiceImpl.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\impl\EmailServiceImpl.java
 c:\Users\marti\Documents\Martin-Pulitano\Privium\git-back\privium-back\src\main\java\Marketplace\services\impl\ListingCUDServiceImpl.java

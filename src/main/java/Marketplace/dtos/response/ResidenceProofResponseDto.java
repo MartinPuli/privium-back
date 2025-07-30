@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import Marketplace.models.User;
+import Marketplace.projections.ICountryDto;
 import Marketplace.projections.IResidenceProofDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,7 +43,7 @@ public class ResidenceProofResponseDto implements Serializable {
      * Construye el DTO a partir de la proyección y entidad User
      */
     public static ResidenceProofResponseDto fromProjectionAndUser(
-            IResidenceProofDto p, User user) {
+            IResidenceProofDto p, User user, ICountryDto country) {
         return ResidenceProofResponseDto.builder()
             .id(p.getId())
             .userId(p.getUserId())
@@ -50,7 +51,7 @@ public class ResidenceProofResponseDto implements Serializable {
             .lastName(user.getLastName())
             .dni(user.getDni())
             .mail(user.getEmail())
-            .countryName(user.getCountry().getName())
+            .countryName(country.getName())
             .proofMessage(p.getProofMessage())
             .proofImageB64(p.getProofImageB64())
             .createdAt(p.getCreatedAt())
