@@ -123,6 +123,11 @@ public class ListingServiceImpl implements ListingService {
                 String imgsCsv = auxUrls.isEmpty() ? null : String.join(imgSep, auxUrls);
 
                 // 4) Llamar al SP AddListing (guarda mainImageUrl)
+                Integer condition = request.getCondition();
+                if ("SERVICIO".equalsIgnoreCase(request.getType())) {
+                        condition = 0; // Los servicios se envían siempre como "nuevo"
+                }
+
                 IListingDto created = listingRepository.addListing(
                                 userId,
                                 request.getTitle(),
@@ -130,7 +135,7 @@ public class ListingServiceImpl implements ListingService {
                                 request.getBrand(),
                                 request.getPrice() != null ? request.getPrice().doubleValue() : null,
                                 mainImageUrl,
-                                request.getCondition(),
+                                condition,
                                 request.getAcceptsBarter() ? 1 : 0,
                                 request.getAcceptsCash() ? 1 : 0,
                                 request.getAcceptsTransfer() ? 1 : 0,
