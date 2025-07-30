@@ -15,7 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,24 +52,36 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         // ── URLs actuales ─────────────────────────────────────
         IListingImagesUrlsDto current = listingRepository.getListingImages(req.getListingId());
 
-        // ── Principal ─────────────────────────────────────────
-        String finalMain = (current != null) ? current.getMainImage() : null;
-        if (mainImage != null) {
-            // Subir primero, borrar después (evita quedar sin imagen si falla el upload)
-            String newMain = s3Service.uploadFile(mainImage);
-            if (finalMain != null) {
-                s3Service.deleteFile(s3Service.extractKey(finalMain));
-            }
-            finalMain = newMain;
-        }
-
-        // ── Auxiliares (máx 4) ────────────────────────────────
-        String[] finalAux = {
+        String currentMain = current != null ? current.getMainImage() : null;
+        String[] currentAux = {
                 current != null ? current.getAux1() : null,
                 current != null ? current.getAux2() : null,
                 current != null ? current.getAux3() : null,
                 current != null ? current.getAux4() : null
         };
+
+        // ── Principal ─────────────────────────────────────────
+        String finalMain = currentMain;
+        if (mainImage != null) {
+            // Subir primero, borrar después (evita quedar sin imagen si falla el upload)
+            String newMain = s3Service.uploadFile(mainImage);
+            if (currentMain != null) {
+                s3Service.deleteFile(s3Service.extractKey(currentMain));
+            }
+            finalMain = newMain;
+        } else if (req.getMainImage() != null) {
+            finalMain = req.getMainImage();
+        }
+
+        // ── Auxiliares (máx 4) ────────────────────────────────
+        String[] finalAux = Arrays.copyOf(currentAux, currentAux.length);
+
+        List<String> reqUrls = req.getImagesURL();
+        if (reqUrls != null) {
+            for (int i = 0; i < finalAux.length; i++) {
+                finalAux[i] = (i < reqUrls.size()) ? reqUrls.get(i) : null;
+            }
+        }
 
         boolean imagesChanged = false;
         MultipartFile[] parts = { image1, image2, image3, image4 };
@@ -79,6 +94,23 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                 }
                 finalAux[i] = s3Service.uploadFile(part);
             }
+        }
+
+        // Eliminar imágenes que ya no estén presentes
+        Set<String> finalSet = Arrays.stream(finalAux)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(HashSet::new));
+        if (finalMain != null) {
+            finalSet.add(finalMain);
+        }
+        for (String old : currentAux) {
+            if (old != null && !finalSet.contains(old)) {
+                s3Service.deleteFile(s3Service.extractKey(old));
+            }
+        }
+
+        if (!Arrays.equals(currentAux, finalAux)) {
+            imagesChanged = true;
         }
 
         // ── CSV de categorías y auxiliares ────────────────────
