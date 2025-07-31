@@ -8,6 +8,7 @@ import Marketplace.services.CountryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
@@ -25,6 +26,7 @@ public class CountryServiceImpl implements CountryService {
     private ICountryRepository countryRepository;
 
     @Override
+    @Cacheable("countries")
     public ResponseDataDto<List<CountryResponseDto>> getCountries() throws SQLException {
         log.info(LOG_TXT + GET_TXT + "Obtengo barrios privados");
 
@@ -43,3 +45,4 @@ public class CountryServiceImpl implements CountryService {
                 .build();
     }
 }
+
