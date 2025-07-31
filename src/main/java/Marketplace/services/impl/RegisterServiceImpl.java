@@ -96,6 +96,7 @@ public class RegisterServiceImpl implements RegisterService {
         }
 
         @Override
+        @Transactional
         public ResponseDto verifyEmail(UserRequestDto request) throws SQLException {
                 log.info(LOG_TXT + VERIFY_EMAIL_TXT + " Verificando email con token: {}", request.getToken());
                 return authRepository.verifyEmail(request.getToken());
