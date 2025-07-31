@@ -14,6 +14,7 @@ import Marketplace.repositories.IListingRepository;
 import Marketplace.repositories.IUserRepository;
 import Marketplace.services.ListingService;
 import Marketplace.services.S3Service;
+import jakarta.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +97,7 @@ public class ListingServiceImpl implements ListingService {
         }
 
         @Override
+        @Transactional
         public ResponseDataDto<ListingResponseDto> addListingWithImages(
                         Long userId,
                         ListingRequestDto request,
@@ -103,16 +105,19 @@ public class ListingServiceImpl implements ListingService {
                         List<MultipartFile> images) throws Exception {
 
                 log.info(LOG_TXT + CREATE_TXT + " Creando publicacion. {}", request);
-                // 1) Subir la imagen principal
-                String mainImageUrl = s3Service.uploadFile(mainImage);
 
-                // 2) Subir imágenes auxiliares (hasta 4)
+                String mainImageUrl = null;
                 List<String> auxUrls = new ArrayList<>();
-                if (images != null) {
-                        for (MultipartFile img : images) {
-                                auxUrls.add(s3Service.uploadFile(img));
+                try {
+                        // 1) Subir la imagen principal
+                        mainImageUrl = s3Service.uploadFile(mainImage);
+
+                        // 2) Subir imágenes auxiliares (hasta 4)
+                        if (images != null) {
+                                for (MultipartFile img : images) {
+                                        auxUrls.add(s3Service.uploadFile(img));
+                                }
                         }
-                }
 
                 // 3) Preparar CSVs
                 String catSep = ",";
@@ -151,6 +156,23 @@ public class ListingServiceImpl implements ListingService {
                                 .description("Publicación creada correctamente")
                                 .data(dto)
                                 .build();
+                } catch (Exception e) {
+                        if (mainImageUrl != null) {
+                                try {
+                                        s3Service.deleteFile(s3Service.extractKey(mainImageUrl));
+                                } catch (Exception ex) {
+                                        log.error("Error limpiando main image", ex);
+                                }
+                        }
+                        for (String url : auxUrls) {
+                                try {
+                                        s3Service.deleteFile(s3Service.extractKey(url));
+                                } catch (Exception ex) {
+                                        log.error("Error limpiando aux image", ex);
+                                }
+                        }
+                        throw e;
+                }
         }
 
         // =======================================================

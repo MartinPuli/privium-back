@@ -13,6 +13,7 @@ import Marketplace.services.AdminService;
 import Marketplace.services.EmailService;
 import Marketplace.services.ListingCUDService;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public ResponseDto approveResidence(Long adminId, UserRequestDto req) throws SQLException, MessagingException {
         validateAdmin(adminId);
 
@@ -60,6 +62,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public ResponseDto deleteListing(Long adminId, ListingAdminRequestDto req) throws SQLException, MessagingException {
         validateAdmin(adminId);
 

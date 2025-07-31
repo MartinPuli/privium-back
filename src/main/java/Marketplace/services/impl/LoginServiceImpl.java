@@ -105,6 +105,7 @@ public class LoginServiceImpl implements LoginService {
         }
 
         @Override
+        @Transactional
         public ResponseDto updatePassword(UserRequestDto request) throws SQLException {
                 log.info(LOG_TXT + UPDATE_PASSWORD_TXT + " Validando token: {}", request.getToken());
 

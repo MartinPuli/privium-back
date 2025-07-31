@@ -7,6 +7,9 @@ import Marketplace.repositories.IListingCUDRepository;
 import Marketplace.repositories.IListingRepository;
 import Marketplace.services.ListingCUDService;
 import Marketplace.services.S3Service;
+import jakarta.transaction.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +42,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
 
     /* ────────────────────────── EDIT ────────────────────────── */
     @Override
+    @Transactional
     public ResponseDto editListingWithImages(
             Long userId,
             ListingRequestDto req,
@@ -48,6 +53,11 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             MultipartFile image4) throws Exception {
 
         log.info("{} EDIT → editing listingId={}", LOG_TXT, req.getListingId());
+
+        String uploadedMain = null;
+        Set<String> uploadedAux = new HashSet<>();
+        List<String> deleteKeys = new ArrayList<>();
+        try {
 
         /*
          * ──────────────────────────────────────────────────────────────
@@ -72,13 +82,16 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         String finalMain = currentMain;
 
         if (mainImage != null) { // nueva portada por archivo
-            String uploaded = s3Service.uploadFile(mainImage);
+            uploadedMain = s3Service.uploadFile(mainImage);
             if (currentMain != null) {
-                s3Service.deleteFile(s3Service.extractKey(currentMain));
+                deleteKeys.add(currentMain);
             }
-            finalMain = uploaded;
+            finalMain = uploadedMain;
         } else if (req.getMainImage() != null // portada enviada como string distinta
                 && !req.getMainImage().equals(currentMain)) {
+            if (currentMain != null) {
+                deleteKeys.add(currentMain);
+            }
             finalMain = req.getMainImage();
         }
         /* Caso contrario: portada sin cambios */
@@ -106,14 +119,15 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             if (parts[i] != null) {
                 imagesChanged = true;
                 if (finalAux[i] != null) {
-                    s3Service.deleteFile(s3Service.extractKey(finalAux[i]));
+                    deleteKeys.add(finalAux[i]);
                 }
                 desiredUrl = s3Service.uploadFile(parts[i]);
+                uploadedAux.add(desiredUrl);
             }
             // c) Sin archivo, pero desiredUrl == null y había algo → borrar
             else if (desiredUrl == null && currentAux[i] != null) {
                 imagesChanged = true;
-                s3Service.deleteFile(s3Service.extractKey(currentAux[i]));
+                deleteKeys.add(currentAux[i]);
             }
 
             finalAux[i] = desiredUrl; // queda estado final del slot
@@ -168,11 +182,43 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             listingCUDRepository.setAuxImages(req.getListingId(), imgsCsv);
         }
 
+        List<String> keysForDeletion = new ArrayList<>(deleteKeys);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                for (String url : keysForDeletion) {
+                    try {
+                        s3Service.deleteFile(s3Service.extractKey(url));
+                    } catch (Exception ex) {
+                        log.error("Error deleting old image", ex);
+                    }
+                }
+            }
+        });
+
         return response;
+        } catch (Exception e) {
+            if (uploadedMain != null) {
+                try {
+                    s3Service.deleteFile(s3Service.extractKey(uploadedMain));
+                } catch (Exception ex) {
+                    log.error("Error limpiando main image", ex);
+                }
+            }
+            for (String url : uploadedAux) {
+                try {
+                    s3Service.deleteFile(s3Service.extractKey(url));
+                } catch (Exception ex) {
+                    log.error("Error limpiando aux image", ex);
+                }
+            }
+            throw e;
+        }
     }
 
     /* ───────────────────────── STATUS ───────────────────────── */
     @Override
+    @Transactional
     public ResponseDto manageStatus(ListingRequestDto req) throws SQLException {
         log.info(LOG_TXT + STATUS_TXT + " Acción={} listingId={}", req.getAction(), req.getListingId());
 
@@ -180,16 +226,35 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         if ("DELETE".equalsIgnoreCase(req.getAction())) {
             IListingImagesUrlsDto imgs = listingRepository.getListingImages(req.getListingId());
 
-            /* principal */
-            if (imgs != null && imgs.getMainImage() != null)
-                s3Service.deleteFile(s3Service.extractKey(imgs.getMainImage()));
+            ResponseDto resp = listingCUDRepository.manageStatus(req.getAction(), req.getListingId());
 
-            /* auxiliares */
-            Arrays.asList(imgs.getAux1(), imgs.getAux2(), imgs.getAux3(), imgs.getAux4())
-                    .forEach(url -> {
-                        if (url != null)
-                            s3Service.deleteFile(s3Service.extractKey(url));
-                    });
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    if (imgs == null) {
+                        return;
+                    }
+                    try {
+                        if (imgs.getMainImage() != null) {
+                            s3Service.deleteFile(s3Service.extractKey(imgs.getMainImage()));
+                        }
+                        Arrays.asList(imgs.getAux1(), imgs.getAux2(), imgs.getAux3(), imgs.getAux4())
+                                .forEach(url -> {
+                                    if (url != null) {
+                                        try {
+                                            s3Service.deleteFile(s3Service.extractKey(url));
+                                        } catch (Exception ex) {
+                                            log.error("Error deleting aux image", ex);
+                                        }
+                                    }
+                                });
+                    } catch (Exception ex) {
+                        log.error("Error deleting listing images", ex);
+                    }
+                }
+            });
+
+            return resp;
         }
 
         return listingCUDRepository.manageStatus(req.getAction(), req.getListingId());
