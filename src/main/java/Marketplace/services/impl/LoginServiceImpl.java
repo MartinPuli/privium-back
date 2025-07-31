@@ -63,6 +63,10 @@ public class LoginServiceImpl implements LoginService {
                 CustomUserDetails customUser = (CustomUserDetails) auth.getPrincipal();
                 User user = customUser.getUser();
 
+                // Remove password hash before building the token to ensure it
+                // is never serialized into the JWT
+                user.setPasswordHash(null);
+
                 String token = jwtUtil.generateToken(user);
 
                 return ResponseDataDto.<String>builder()
