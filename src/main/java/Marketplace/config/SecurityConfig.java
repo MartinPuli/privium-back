@@ -83,7 +83,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://martinpuli.github.io/privium-front", "http://localhost:4200"));
+        config.setAllowedOrigins(List.of("https://martinpuli.github.io", "http://localhost:4200"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Headers que el cliente puede mandar (incluye tu user-id)
         config.setAllowedHeaders(List.of(
