@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class EmailServiceImpl implements EmailService {
 
         @Autowired
         private JavaMailSender sender;
+
+        @Value("${origin.url}")
+        private String originUrl;
 
         @Override
         public void sendConfirmationEmail(EmailConfirmationToken emailConfirmationToken) throws MessagingException {
@@ -60,7 +64,7 @@ public class EmailServiceImpl implements EmailService {
         }
 
         private String generateConfirmationLink(String token) {
-                return "<a href=http://localhost:4200/auth/verify-email?token=" + token + ">Confirm Email</a>";
+                return "<a href=" + originUrl + "/auth/verify-email?token=" + token + ">Confirm Email</a>";
         }
 
         @Override
@@ -76,7 +80,7 @@ public class EmailServiceImpl implements EmailService {
                 helper.setSubject("Restablece tu contraseña – Privium Marketplace");
 
                 // Genera el enlace de reset (ajusta la URL a tu frontend)
-                String link = "http://localhost:4200/auth/reset-password?token=" + resetToken.getToken();
+                String link = originUrl + "/auth/reset-password?token=" + resetToken.getToken();
 
                 helper.setText(
                                 "<html>" +
