@@ -24,11 +24,17 @@ Utilice el perfil correspondiente (por ejemplo `local` o `dev`) configurado en l
 
 ## Configuración
 
-Los archivos en `src/main/resources` contienen propiedades para distintos entornos (`application-local.properties`, `application-dev.properties`, etc.). Ajuste estas propiedades según sus credenciales y entorno.
+Los archivos en `src/main/resources` contienen propiedades para distintos entornos (`application-local.properties`, `application-dev.properties`, `application-prod.properties`, etc.). Ajuste estas propiedades según sus credenciales y entorno. En producción se espera que defina las variables de entorno `JDBC_URL`, `DB_USERNAME` y `DB_PASSWORD` utilizadas en `application-prod.properties`.
 
 ## Estructura
 - `src/main/java` – código Java de la aplicación.
 - `src/main/resources` – configuraciones y recursos.
 
 ## Despliegue
-El artefacto generado se ubica en `target/marketplace-backend-0.0.1-SNAPSHOT.jar`. Puede ejecutarlo con `java -jar`.
+El artefacto generado se ubica en `target/marketplace-backend-0.0.1-SNAPSHOT.jar`. Para ejecutarlo en producción, utilice:
+
+```bash
+java -jar target/marketplace-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+```
+
+Asegúrese de que las variables de entorno mencionadas estén configuradas antes de iniciar la aplicación.
