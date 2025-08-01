@@ -1,7 +1,9 @@
 Marketplace\dtos\request\CategoryRequestDto.class
 Marketplace\repositories\IUserCUDRepository.class
 Marketplace\commons\ApplicationResponse$ApplicationResponseBuilder.class
+Marketplace\services\impl\ListingCUDServiceImpl$2.class
 Marketplace\dtos\response\CategoryResponseDto.class
+Marketplace\dtos\response\UserResponseDto$UserResponseDtoBuilder.class
 Marketplace\services\ResidenceService.class
 Marketplace\services\impl\ResidenceServiceImpl.class
 Marketplace\dtos\response\ListingImageResponseDto$ListingImageResponseDtoBuilder.class
@@ -51,6 +53,8 @@ Marketplace\dtos\response\CountryResponseDto$CountryResponseDtoBuilder.class
 Marketplace\models\Country.class
 Marketplace\commons\ErrorMessage$ErrorMessageBuilder.class
 Marketplace\services\impl\ContactServiceImpl.class
+Marketplace\services\impl\ListingCUDServiceImpl$1.class
+Marketplace\config\CacheConfig.class
 Marketplace\config\S3Config.class
 Marketplace\services\impl\ListingServiceImpl.class
 Marketplace\commons\Parameter.class
@@ -91,6 +95,7 @@ Marketplace\dtos\response\ListingCategoryResponseDto$ListingCategoryResponseDtoB
 Marketplace\dtos\response\ListingResponseDto.class
 Marketplace\models\EmailConfirmationToken$EmailConfirmationTokenBuilder.class
 Marketplace\controllers\RegisterController.class
+Marketplace\dtos\response\UserResponseDto.class
 Marketplace\services\ContactService.class
 Marketplace\dtos\response\ListingInfoResponseDto$ListingInfoResponseDtoBuilder.class
 Marketplace\services\S3Service.class
