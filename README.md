@@ -26,6 +26,8 @@ Por defecto la aplicación se inicia con el perfil `dev`. Puede cambiarlo establ
 
 Los archivos en `src/main/resources` contienen propiedades para distintos entornos (`application-local.properties`, `application-dev.properties`, `application-prod.properties`, etc.). Ajuste estas propiedades según sus credenciales y entorno. En producción se espera que defina las variables de entorno `JDBC_URL`, `DB_USERNAME` y `DB_PASSWORD` utilizadas en `application-prod.properties`.
 
+La variable de entorno `ORIGIN_URL` indica la URL permitida para solicitudes al backend y se utiliza para generar los enlaces enviados por correo electrónico.
+
 ## Estructura
 - `src/main/java` – código Java de la aplicación.
 - `src/main/resources` – configuraciones y recursos.
