@@ -64,7 +64,7 @@ public class EmailServiceImpl implements EmailService {
         }
 
         private String generateConfirmationLink(String token) {
-                return "<a href=" + originUrl + "/privium-front/auth/verify-email?token=" + token + ">Confirm Email</a>";
+                return "<a href=" + originUrl + "privium-front/auth/verify-email?token=" + token + ">Confirm Email</a>";
         }
 
         @Override
@@ -80,7 +80,7 @@ public class EmailServiceImpl implements EmailService {
                 helper.setSubject("Restablece tu contraseña – Privium Marketplace");
 
                 // Genera el enlace de reset (ajusta la URL a tu frontend)
-                String link = originUrl + "/privium-front/auth/reset-password?token=" + resetToken.getToken();
+                String link = originUrl + "privium-front/auth/reset-password?token=" + resetToken.getToken();
 
                 helper.setText(
                                 "<html>" +
