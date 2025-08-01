@@ -20,7 +20,7 @@ Puede iniciar la aplicación con:
 mvn spring-boot:run
 ```
 
-Utilice el perfil correspondiente (por ejemplo `local` o `dev`) configurado en los archivos de `src/main/resources`.
+Por defecto la aplicación se inicia con el perfil `dev`. Puede cambiarlo estableciendo la propiedad `spring.profiles.active` o la variable de entorno `SPRING_PROFILES_ACTIVE`.
 
 ## Configuración
 
