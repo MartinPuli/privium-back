@@ -130,7 +130,25 @@ public class ListingController {
         }
 
         // =======================================================
-        // 6) Obtener información del vendedor (seller) a partir de filtros
+        // 6) Eliminar una imagen auxiliar de una publicación
+        // =======================================================
+        @DeleteMapping("/auxImage/{listingId}/{imageNumber}")
+        public ResponseEntity<ResponseDto> deleteAuxImage(
+                        @RequestHeader(value = TextConstant.USER_HEADER) Long idUser,
+                        @PathVariable Long listingId,
+                        @PathVariable Integer imageNumber) throws Exception {
+
+                log.info(LOG_TXT + "[deleteAuxImage] Inicio eliminación imagen");
+
+                ResponseDto resp = listingCUDService.deleteListingImage(listingId, imageNumber);
+
+                log.info(LOG_TXT + "[deleteAuxImage] Finaliza eliminación imagen");
+
+                return ResponseEntity.ok(resp);
+        }
+
+        // =======================================================
+        // 7) Obtener información del vendedor (seller) a partir de filtros
         // =======================================================
         @PostMapping(value = "/getSeller", headers = TextConstant.APPLICATION_JSON)
         public ResponseEntity<ResponseDataDto<User>> getSeller(
