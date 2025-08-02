@@ -111,7 +111,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             String desiredUrl = finalAux[i]; // por defecto “lo que hay”
 
             // a) Si vino array de URLS → ese es el estado deseado (url o null)
-            if (reqUrls != null) {
+            if (reqUrls != null && i < reqUrls.size()) {
                 desiredUrl = reqUrls.get(i); // puede ser null
             }
 
