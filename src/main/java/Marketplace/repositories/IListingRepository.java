@@ -78,4 +78,7 @@ public interface IListingRepository extends JpaRepository<Listing, Integer> {
 
     @Query(value = "CALL GetListingCategories(:listingId)", nativeQuery = true)
     List<IListingCategoryDto> getListingCategories(@Param("listingId") Long listingId) throws SQLException;
+
+    @Query(value = "CALL GetUserImages(:userId)", nativeQuery = true)
+    List<String> getUserImages(@Param("userId") Long userId) throws SQLException;
 }
