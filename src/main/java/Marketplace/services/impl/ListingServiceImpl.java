@@ -114,8 +114,12 @@ public class ListingServiceImpl implements ListingService {
 
                         // 2) Subir imágenes auxiliares (hasta 4)
                         if (images != null) {
-                                for (MultipartFile img : images) {
-                                        auxUrls.add(s3Service.uploadFile(img));
+                                int limit = Math.min(images.size(), 4);
+                                for (int i = 0; i < limit; i++) {
+                                        MultipartFile img = images.get(i);
+                                        if (img != null) {
+                                                auxUrls.add(s3Service.uploadFile(img));
+                                        }
                                 }
                         }
 
