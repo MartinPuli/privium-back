@@ -81,20 +81,25 @@ public class ListingCUDServiceImpl implements ListingCUDService {
          */
         String finalMain = currentMain;
 
-        if (mainImage != null) { // nueva portada por archivo
-            uploadedMain = s3Service.uploadFile(mainImage);
-            if (currentMain != null) {
-                deleteKeys.add(currentMain);
+        // Si viene archivo y es diferente al actual (por URL), sube y reemplaza
+        if (mainImage != null) {
+            // Si el archivo es diferente al actual (por nombre o checksum, aquí solo por URL)
+            String uploaded = s3Service.uploadFile(mainImage);
+            if (!Objects.equals(uploaded, currentMain)) {
+                uploadedMain = uploaded;
+                if (currentMain != null) {
+                    deleteKeys.add(currentMain);
+                }
+                finalMain = uploadedMain;
             }
-            finalMain = uploadedMain;
-        } else if (req.getMainImage() != null // portada enviada como string distinta
-                && !req.getMainImage().equals(currentMain)) {
+        } else if (req.getMainImage() != null && !req.getMainImage().equals(currentMain)) {
+            // Si viene string distinto, reemplaza
             if (currentMain != null) {
                 deleteKeys.add(currentMain);
             }
             finalMain = req.getMainImage();
         }
-        /* Caso contrario: portada sin cambios */
+        // Caso contrario: portada sin cambios
 
         /*
          * ──────────────────────────────────────────────────────────────

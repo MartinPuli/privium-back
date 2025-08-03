@@ -45,7 +45,7 @@ public class ListingServiceImpl implements ListingService {
         private S3Service s3Service;
 
         @Autowired
-        private IUserRepository userRepository; 
+        private IUserRepository userRepository;
 
         @Override
         public ResponseDataDto<ListingInfoResponseDto> getListingInfo(Long listingId) throws SQLException {
@@ -83,7 +83,8 @@ public class ListingServiceImpl implements ListingService {
                                 request.getConditionFilter(), request.getBrandFilter(), request.getType(),
                                 request.getAcceptsBarter(), request.getAcceptsCash(), request.getAcceptsTransfer(),
                                 request.getAcceptsCard(), request.getMinPrice(), request.getMaxPrice(),
-                                request.getListingId(), request.getNotShownListing(), request.getNotShownUser(), request.getPage(), request.getPageSize());
+                                request.getListingId(), request.getNotShownListing(), request.getNotShownUser(),
+                                request.getPage(), request.getPageSize());
 
                 List<ListingResponseDto> data = raw.stream()
                                 .map(ListingResponseDto::convertEntityToDto)
@@ -123,43 +124,43 @@ public class ListingServiceImpl implements ListingService {
                                 }
                         }
 
-                // 3) Preparar CSVs
-                String catSep = ",";
-                String imgSep = String.valueOf((char) 31);
-                String catsCsv = (request.getCategoriesId() != null)
-                                ? String.join(catSep, request.getCategoriesId())
-                                : null;
-                String imgsCsv = auxUrls.isEmpty() ? null : String.join(imgSep, auxUrls);
+                        // 3) Preparar CSVs
+                        String catSep = ",";
+                        String imgSep = String.valueOf((char) 31);
+                        String catsCsv = (request.getCategoriesId() != null)
+                                        ? String.join(catSep, request.getCategoriesId())
+                                        : null;
+                        String imgsCsv = auxUrls.isEmpty() ? null : String.join(imgSep, auxUrls);
 
-                // 4) Llamar al SP AddListing (guarda mainImageUrl)
-                IListingDto created = listingRepository.addListing(
-                                userId,
-                                request.getTitle(),
-                                request.getDescription(),
-                                request.getBrand(),
-                                request.getPrice() != null ? request.getPrice().doubleValue() : null,
-                                mainImageUrl,
-                                request.getCondition(),
-                                request.getAcceptsBarter() ? 1 : 0,
-                                request.getAcceptsCash() ? 1 : 0,
-                                request.getAcceptsTransfer() ? 1 : 0,
-                                request.getAcceptsCard() ? 1 : 0,
-                                request.getType(),
-                                catsCsv);
+                        // 4) Llamar al SP AddListing (guarda mainImageUrl)
+                        IListingDto created = listingRepository.addListing(
+                                        userId,
+                                        request.getTitle(),
+                                        request.getDescription(),
+                                        request.getBrand(),
+                                        request.getPrice() != null ? request.getPrice().doubleValue() : null,
+                                        mainImageUrl,
+                                        request.getCondition(),
+                                        request.getAcceptsBarter() ? 1 : 0,
+                                        request.getAcceptsCash() ? 1 : 0,
+                                        request.getAcceptsTransfer() ? 1 : 0,
+                                        request.getAcceptsCard() ? 1 : 0,
+                                        request.getType(),
+                                        catsCsv);
 
-                // 5) Guardar URLs auxiliares
-                if (imgsCsv != null) {
-                        listingCUDRepository.setAuxImages(created.getId(), imgsCsv);
-                }
+                        // 5) Guardar URLs auxiliares
+                        if (imgsCsv != null) {
+                                listingCUDRepository.setAuxImages(created.getId(), imgsCsv);
+                        }
 
-                // 6) Mapear DTO de respuesta
-                ListingResponseDto dto = ListingResponseDto.convertEntityToDto(created);
+                        // 6) Mapear DTO de respuesta
+                        ListingResponseDto dto = ListingResponseDto.convertEntityToDto(created);
 
-                return ResponseDataDto.<ListingResponseDto>builder()
-                                .code(200)
-                                .description("Publicación creada correctamente")
-                                .data(dto)
-                                .build();
+                        return ResponseDataDto.<ListingResponseDto>builder()
+                                        .code(200)
+                                        .description("Publicación creada correctamente")
+                                        .data(dto)
+                                        .build();
                 } catch (Exception e) {
                         if (mainImageUrl != null) {
                                 try {
