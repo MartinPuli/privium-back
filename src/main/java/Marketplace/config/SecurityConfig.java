@@ -5,6 +5,7 @@ import Marketplace.config.jwt.JwtFilter;
 import Marketplace.config.jwt.JwtUtil;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,18 @@ public class SecurityConfig {
 
     @Value("${origin.url}")
     private String originUrl;
+
+    @Value("${cors.allowed.origins:http://localhost:4200}")
+    private String allowedOrigins;
+
+    @Value("${cors.allowed.methods:GET,POST,PUT,DELETE,OPTIONS}")
+    private String allowedMethods;
+
+    @Value("${cors.allowed.headers:Authorization,Content-Type,user-id}")
+    private String allowedHeaders;
+
+    @Value("${cors.allow.credentials:true}")
+    private boolean allowCredentials;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -87,15 +100,25 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(originUrl));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Headers que el cliente puede mandar (incluye tu user-id)
-        config.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "user-id"            
-        ));
-        config.setAllowCredentials(true);
+        
+        // Usar múltiples orígenes
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        config.setAllowedOriginPatterns(origins);
+        
+        // Métodos configurables
+        List<String> methods = Arrays.asList(allowedMethods.split(","));
+        config.setAllowedMethods(methods);
+        
+        // Headers configurables
+        List<String> headers = Arrays.asList(allowedHeaders.split(","));
+        config.setAllowedHeaders(headers);
+        
+        // Credenciales configurables
+        config.setAllowCredentials(allowCredentials);
+        
+        // Headers expuestos para JWT
+        config.setExposedHeaders(List.of("Authorization"));
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
