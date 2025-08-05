@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
+import org.springframework.util.StringUtils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,10 @@ public class S3Service {
      * Sube un archivo al bucket y retorna la URL pública.
      */
     public String uploadFile(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty() ||
+                !StringUtils.hasText(file.getOriginalFilename())) {
+            throw new IllegalArgumentException("Archivo vacío o sin nombre");
+        }
         String original = file.getOriginalFilename(); // "residence-proof-1 (1).jpg"
         String clean = original.replaceAll("[\\s()]", "_"); // "residence-proof-1__1_.jpg"
 
