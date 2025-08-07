@@ -20,108 +20,114 @@ import Marketplace.models.User;
 import Marketplace.projections.ICountryDto;
 import Marketplace.services.EmailService;
 
+/**
+ * Centralised e‑mail utility for Privium Marketplace.
+ * <p>
+ * All messages share a friendlier tone, richer context
+ * (why you received the e‑mail, what to do next and how to get help)
+ * and every dynamic link is generated from a single {@code originUrl}
+ * property so that changing the base host/domain requires no code change.
+ * </p>
+ */
 @Service
 public class EmailServiceImpl implements EmailService {
+
+        private static final String FROM_EMAIL = "priviumcontacto@gmail.com";
+        private static final String BRAND_NAME = "Privium Marketplace";
 
         @Autowired
         private JavaMailSender sender;
 
+        /** Base URL for the front‑end (e.g. "https://app.privium.com/") */
         @Value("${origin.url}")
         private String originUrl;
 
-        @Override
-        public void sendConfirmationEmail(EmailConfirmationToken emailConfirmationToken) throws MessagingException {
-                // MIME - HTML message
-                MimeMessage message = sender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true);
-                helper.setFrom("priviumcontacto@gmail.com");
-                helper.setTo(emailConfirmationToken.getUser().getEmail().trim());
+        /* ----------------------------------------------------------- */
+        /* Helper methods */
+        /* ----------------------------------------------------------- */
 
-                helper.setSubject("Confirma tu correo electrónico – Privium Marketplace");
-
-                helper.setText(
-                                "<html>" +
-                                                "<body>" +
-                                                "<h2>¡Hola "
-                                                + emailConfirmationToken.getUser().getName() + " "
-                                                + emailConfirmationToken.getUser().getLastName() + "!</h2>" +
-                                                "<p>¡Bienvenido a <strong>Privium Marketplace</strong>! " +
-                                                "Nos alegra que te hayas registrado.</p>" +
-                                                "<p>Para activar tu cuenta y empezar a compartir con tu comunidad privada, "
-                                                +
-                                                "haz clic en el siguiente enlace:</p>" +
-                                                "<p>" + generateConfirmationLink(emailConfirmationToken.getToken())
-                                                + "</p>" +
-                                                "<p>Si no has solicitado esta verificación, ignora este correo.</p>" +
-                                                "<br/>" +
-                                                "<p>Saludos cordiales,<br/>" +
-                                                "El equipo de Privium Marketplace</p>" +
-                                                "</body>" +
-                                                "</html>",
-                                true);
-
-                sender.send(message);
+        /**
+         * Ensures that {@code originUrl} always ends with a single '/'.
+         */
+        private String baseUrl() {
+                return originUrl.endsWith("/") ? originUrl : originUrl + "/";
         }
 
-        private String generateConfirmationLink(String token) {
-                return "<a href=" + originUrl + "privium-front/auth/verify-email?token=" + token + ">Confirm Email</a>";
+        private String makeButton(String href, String label) {
+                return "<a href=\"" + href + "\" style=\"display:inline-block;padding:12px 24px;margin:16px 0;"
+                                + "background-color:#1d4ed8;border-radius:6px;color:#ffffff;text-decoration:none;"
+                                + "font-weight:600;\">" + label + "</a>";
         }
 
+        private String fullWidthImg(String src, String alt) {
+                return "<img src=\"" + src + "\" alt=\"" + alt + "\" style=\"max-width:100%;height:auto;border:0;\"/>";
+        }
+
+        private String wrapper(String title, String content) {
+                return "<html><body style=\"font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;\">"
+                                + fullWidthImg(baseUrl() + "assets/email/header.png", BRAND_NAME)
+                                + "<h2 style=\"color:#1d4ed8;\">" + title + "</h2>"
+                                + content
+                                + "<hr style=\"margin-top:32px;border:none;border-top:1px solid #e5e7eb;\"/>"
+                                + "<small style=\"color:#6b7280;\">Este correo fue enviado por " + BRAND_NAME
+                                + ". Si tienes alguna duda o "
+                                + "recibiste este mensaje por error, por favor contáctanos en <a href=\"mailto:"
+                                + FROM_EMAIL + "\">"
+                                + FROM_EMAIL + "</a>.</small>"
+                                + "</body></html>";
+        }
+
+        /* ----------------------------------------------------------- */
+        /* Email implementations */
+        /* ----------------------------------------------------------- */
+
         @Override
-        public void sendPasswordResetEmail(PasswordResetToken resetToken) throws MessagingException {
-                User user = resetToken.getUser();
-                String cleanEmail = user.getEmail().trim();
+        public void sendConfirmationEmail(EmailConfirmationToken ect) throws MessagingException {
+                User u = ect.getUser();
+                String link = baseUrl() + "auth/verify-email?token=" + ect.getToken();
 
-                MimeMessage message = sender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                String inner = "<p>¡Hola <strong>" + u.getName() + " " + u.getLastName()
+                                + "</strong>! Gracias por registrarte en "
+                                + BRAND_NAME + ". Solo queda un paso para activar tu cuenta.</p>"
+                                + makeButton(link, "Confirmar correo electrónico")
+                                + "<p>Si el botón no funciona copia y pega este enlace en tu navegador:<br/><a href=\""
+                                + link + "\">" + link + "</a></p>";
 
-                helper.setFrom("priviumcontacto@gmail.com");
-                helper.setTo(cleanEmail);
-                helper.setSubject("Restablece tu contraseña – Privium Marketplace");
-
-                // Genera el enlace de reset (ajusta la URL a tu frontend)
-                String link = originUrl + "privium-front/auth/reset-password?token=" + resetToken.getToken();
-
-                helper.setText(
-                                "<html>" +
-                                                "<body>" +
-                                                "<h2>¡Hola " + user.getName() + " " + user.getLastName() + "!</h2>" +
-                                                "<p>Has solicitado restablecer tu contraseña en <strong>Privium Marketplace</strong>.</p>"
-                                                +
-                                                "<p>Haz clic en el siguiente enlace para elegir una nueva contraseña:</p>"
-                                                +
-                                                "<p><a href=\"" + link + "\">Restablecer contraseña</a></p>" +
-                                                "<p>Este enlace expirará en 24 horas. Si no fuiste tú quien lo solicitó, ignora este correo.</p>"
-                                                +
-                                                "<br/>" +
-                                                "<p>Saludos cordiales,<br/>" +
-                                                "El equipo de Privium Marketplace</p>" +
-                                                "</body>" +
-                                                "</html>",
-                                true);
-
-                sender.send(message);
+                sendHtmlMail(u.getEmail(), "Confirma tu correo electrónico – " + BRAND_NAME,
+                                wrapper("Activa tu cuenta", inner));
         }
 
         @Override
-        public void sendRegistrationProof(
-                        User user,
-                        String proofMessage,
-                        byte[] imageData,
-                        String imageFilename) throws MessagingException, IOException {
+        public void sendPasswordResetEmail(PasswordResetToken prt) throws MessagingException {
+                User u = prt.getUser();
+                String link = baseUrl() + "auth/reset-password?token=" + prt.getToken();
+
+                String inner = "<p>¡Hola <strong>" + u.getName() + " " + u.getLastName() + "</strong>! "
+                                + "Recibimos una solicitud para restablecer tu contraseña.</p>"
+                                + makeButton(link, "Elegir nueva contraseña")
+                                + "<p>Este enlace vencerá en 24 horas. Si tú no solicitaste el cambio, simplemente ignora este mensaje.</p>";
+
+                sendHtmlMail(u.getEmail(), "Restablece tu contraseña – " + BRAND_NAME,
+                                wrapper("Restablecer contraseña", inner));
+        }
+
+        @Override
+        public void sendRegistrationProof(User user, String proofMessage, byte[] imageData, String imageFilename)
+                        throws MessagingException, IOException {
+
                 MimeMessage msg = sender.createMimeMessage();
                 MimeMessageHelper h = new MimeMessageHelper(msg, true);
-                h.setFrom("priviumcontacto@gmail.com");
-                h.setTo("tucuenta@tudominio.com");
-                h.setSubject("Prueba de residencia – Privium Marketplace");
+                h.setFrom(FROM_EMAIL);
+                h.setTo("mpulitano1701@gmail.com");
+                h.setSubject("Nuevo registro pendiente de verificación – " + BRAND_NAME);
 
-                String html = "<html><body>"
-                                + "<h2>Nuevo registro de “" + user.getName() + " " + user.getLastName() + "”</h2>"
-                                + "<p><strong>Email:</strong> " + user.getEmail() + "</p>"
-                                + "<p><strong>Mensaje:</strong><br/>"
-                                + (proofMessage != null ? proofMessage : "(sin mensaje)") + "</p>"
-                                + "</body></html>";
-                h.setText(html, true);
+                String inner = "<p><strong>Email:</strong> " + user.getEmail() + "</p>"
+                                + (proofMessage != null && !proofMessage.isBlank()
+                                                ? "<p><strong>Mensaje del usuario:</strong><br/>" + proofMessage
+                                                                + "</p>"
+                                                : "");
+
+                h.setText(wrapper("Prueba de residencia recibida", inner), true);
 
                 if (imageData != null && imageFilename != null) {
                         ByteArrayDataSource ds = new ByteArrayDataSource(imageData,
@@ -133,87 +139,53 @@ public class EmailServiceImpl implements EmailService {
         }
 
         @Override
-    public void sendResidenceDecisionEmail(User user, boolean approved)
-                        throws MessagingException {
+        public void sendResidenceDecisionEmail(User user, boolean approved) throws MessagingException {
+                String title = approved ? "Residencia verificada" : "Residencia rechazada";
+                String decisionText = approved
+                                ? "<p>¡Felicidades! Ya puedes disfrutar de todas las funcionalidades dentro de tu comunidad privada.</p>"
+                                : "<p>Lamentamos informarte que la documentación enviada no fue suficiente. Revise los documentos y mande el seguimiento de su caso a priviumcontacto@gmail.com. Si fue un error, sepa disculparnos. Nuestro deber es brindarle la mayor seguridad a nuestros usuarios</p>";
 
+                String inner = "<p>¡Hola <strong>" + user.getName() + " " + user.getLastName() + "</strong>!</p>"
+                                + decisionText;
+
+                sendHtmlMail(user.getEmail(), title + " – " + BRAND_NAME, wrapper(title, inner));
+        }
+
+        @Override
+        public void sendListingDeletionEmail(User owner, String listingTitle, String adminMessage)
+                        throws MessagingException {
+                String inner = "<p>¡Hola <strong>" + owner.getName() + " " + owner.getLastName() + "</strong>!</p>"
+                                + "<p>Tu publicación <strong>" + listingTitle
+                                + "</strong> fue eliminada por un administrador por no cumplir con nuestras normas de convivencia.</p>"
+                                + (adminMessage != null && !adminMessage.isBlank()
+                                                ? "<p>Motivo: " + adminMessage + "</p>"
+                                                : "")
+                                + "<p>Si tienes dudas, responde a este correo para obtener más información.</p>";
+
+                sendHtmlMail(owner.getEmail(), "Publicación eliminada – " + BRAND_NAME,
+                                wrapper("Publicación eliminada", inner));
+        }
+
+        @Override
+        public void sendContactMessage(User user, String header, String message, ICountryDto country)
+                        throws MessagingException {
+                String subject = (header != null && !header.isBlank() ? header + " – " : "")
+                                + user.getName() + " " + user.getLastName() + " (" + country.getName() + ")";
+
+                sendHtmlMail("mpulitano1701@gmail.com", subject, wrapper(subject, "<p>" + message + "</p>"));
+        }
+
+        /* ----------------------------------------------------------- */
+        /* Private send helpers */
+        /* ----------------------------------------------------------- */
+
+        private void sendHtmlMail(String to, String subject, String htmlBody) throws MessagingException {
                 MimeMessage msg = sender.createMimeMessage();
                 MimeMessageHelper h = new MimeMessageHelper(msg, true);
-
-                h.setFrom("priviumcontacto@gmail.com");
-                h.setTo(user.getEmail().trim());
-
-                String subject = approved
-                                ? "Residencia verificada – Privium Marketplace"
-                                : "Residencia rechazada – Privium Marketplace";
+                h.setFrom(FROM_EMAIL);
+                h.setTo(to.trim());
                 h.setSubject(subject);
-
-                String html = """
-                                <html><body>
-                                    <h2>¡Hola %s %s!</h2>
-                                    <p>Tu prueba de residencia ha sido <strong>%s</strong>.</p>
-                                    %s
-                                    <br/>
-                                    <p>Saludos cordiales,<br/>
-                                    El equipo de Privium Marketplace</p>
-                                </body></html>
-                                """.formatted(
-                                user.getName(), user.getLastName(),
-                                approved ? "aprobada" : "rechazada",
-                                approved
-                                                ? "<p>Ya podés operar dentro de tu comunidad privada.</p>"
-                                                : "<p>Revisa la documentación y vuelve a intentarlo.</p>");
-
-                h.setText(html, true);
+                h.setText(htmlBody, true);
                 sender.send(msg);
         }
-
-        @Override
-        public void sendListingDeletionEmail(User owner, String listingTitle, String message)
-                        throws MessagingException {
-
-                MimeMessage msg = sender.createMimeMessage();
-                MimeMessageHelper h = new MimeMessageHelper(msg, true);
-
-                h.setFrom("priviumcontacto@gmail.com");
-                h.setTo(owner.getEmail().trim());
-                h.setSubject("Publicación eliminada – Privium Marketplace");
-
-                String html = String.format(
-                                "<html><body>" +
-                                "<h2>¡Hola %s %s!</h2>" +
-                                "<p>Tu publicación <strong>%s</strong> ha sido eliminada por un administrador.</p>" +
-                                "%s" +
-                                "<br/>" +
-                                "<p>Saludos cordiales,<br/>" +
-                                "El equipo de Privium Marketplace</p>" +
-                                "</body></html>",
-                                owner.getName(), owner.getLastName(), listingTitle,
-                                message != null ? "<p>" + message + "</p>" : "");
-
-                h.setText(html, true);
-                sender.send(msg);
-        }
-
-        @Override
-        public void sendContactMessage(User user, String header, String message, ICountryDto country) throws MessagingException {
-                MimeMessage msg = sender.createMimeMessage();
-                MimeMessageHelper h = new MimeMessageHelper(msg, true);
-
-                h.setFrom("priviumcontacto@gmail.com");
-                h.setTo("mpulitano1701@gmail.com");
-
-                StringBuilder subject = new StringBuilder();
-                if (header != null && !header.isBlank()) {
-                        subject.append(header).append(" - ");
-                }
-                subject.append(user.getName()).append(" ").append(user.getLastName());
-
-                subject.append(" (").append(country.getName()).append(")");
-
-                h.setSubject(subject.toString());
-
-                h.setText(message, false);
-                sender.send(msg);
-        }
-
 }
