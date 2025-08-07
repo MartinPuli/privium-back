@@ -12,7 +12,7 @@ public interface IResidenceProofDto {
 
     String getProofMessage();
 
-    String getProofImageB64();
+    String getProofImage();
 
     LocalDateTime getCreatedAt();
 }
