@@ -59,13 +59,8 @@ public class EmailServiceImpl implements EmailService {
                                 + "font-weight:600;\">" + label + "</a>";
         }
 
-        private String fullWidthImg(String src, String alt) {
-                return "<img src=\"" + src + "\" alt=\"" + alt + "\" style=\"max-width:100%;height:auto;border:0;\"/>";
-        }
-
         private String wrapper(String title, String content) {
                 return "<html><body style=\"font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;\">"
-                                + fullWidthImg(baseUrl() + "assets/email/header.png", BRAND_NAME)
                                 + "<h2 style=\"color:#1d4ed8;\">" + title + "</h2>"
                                 + content
                                 + "<hr style=\"margin-top:32px;border:none;border-top:1px solid #e5e7eb;\"/>"
