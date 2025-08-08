@@ -9,8 +9,10 @@ import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -30,14 +32,15 @@ public class RegisterController {
         // =======================================================
         // 1) Registro de Usuario
         // =======================================================
-        @PostMapping(value = "/register", headers = TextConstant.APPLICATION_JSON)
+        @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<ResponseDto> registerUser(
-                        @RequestBody UserRequestDto request)
+                        @RequestPart("request") UserRequestDto request,
+                        @RequestPart(value = "document", required = false) MultipartFile document)
                         throws SQLException, MessagingException, IOException {
 
                 log.info(LOG_TXT + REGISTER_TXT + " Solicitud de registro recibida.");
 
-                ResponseDto serviceResponse = registerService.registerUser(request);
+                ResponseDto serviceResponse = registerService.registerUser(request, document);
 
                 log.info(LOG_TXT + REGISTER_TXT +
                                 " Registro completado. Code: {}, Description: {}",

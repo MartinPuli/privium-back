@@ -16,6 +16,7 @@ import Marketplace.services.RegisterService;
 import Marketplace.services.S3Service;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -47,7 +48,7 @@ public class RegisterServiceImpl implements RegisterService {
 
         @Override
         @Transactional
-        public ResponseDto registerUser(UserRequestDto req)
+        public ResponseDto registerUser(UserRequestDto req, MultipartFile document)
                         throws SQLException, MessagingException, IOException {
 
                 log.info(LOG_TXT + REGISTER_TXT + " Creando usuario para req={}", req);
@@ -55,12 +56,27 @@ public class RegisterServiceImpl implements RegisterService {
                 if (req.getPassword() == null || req.getPassword().isBlank()) {
                         throw new SQLException("La contraseña es obligatoria");
                 }
+
+                // Procesar documento si está presente
+                String proofImageBase64 = null;
+                byte[] imageBytes = null;
+                if (document != null && !document.isEmpty()) {
+                        imageBytes = document.getBytes();
+                        proofImageBase64 = Base64.getEncoder().encodeToString(imageBytes);
+                } else if (req.getProofImageBase64() != null && !req.getProofImageBase64().isBlank()) {
+                        String b64 = req.getProofImageBase64();
+                        if (b64.contains(","))
+                                b64 = b64.split(",", 2)[1];
+                        proofImageBase64 = b64;
+                        imageBytes = Base64.getDecoder().decode(b64);
+                }
+
                 // 1) Crear usuario
                 String hashed = passwordEncoder.encode(req.getPassword());
                 User newUser = userRepository.createUser(
                                 req.getName(), req.getLastname(), req.getEmail(),
                                 hashed, req.getDni(), req.getCountryId(), req.getPhone(),
-                                req.getProofMessage(), req.getProofImageBase64());
+                                req.getProofMessage(), proofImageBase64);
 
                 // 2) Token email
                 String token = UUID.randomUUID().toString();
@@ -74,14 +90,9 @@ public class RegisterServiceImpl implements RegisterService {
                                                 .build());
 
                 // 4) Guardar prueba en S3 y registrar verificación pendiente
-                byte[] imageBytes = null;
                 String filename = null;
                 String proofUrl = null;
-                if (req.getProofImageBase64() != null && !req.getProofImageBase64().isBlank()) {
-                        String b64 = req.getProofImageBase64();
-                        if (b64.contains(","))
-                                b64 = b64.split(",", 2)[1];
-                        imageBytes = Base64.getDecoder().decode(b64);
+                if (imageBytes != null) {
                         filename = "proof-" + newUser.getId() + ".jpg";
                         proofUrl = s3Service.uploadProof(imageBytes, filename);
                 }
