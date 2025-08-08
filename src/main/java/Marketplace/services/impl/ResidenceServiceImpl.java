@@ -19,11 +19,8 @@ import Marketplace.repositories.ICountryRepository;
 import Marketplace.repositories.IResidenceRepository;
 import Marketplace.repositories.IUserRepository;
 import Marketplace.services.ResidenceService;
+import Marketplace.services.S3Service;
 
-/**
- * Implementación del servicio de gestión de pruebas de residencia.
- * Ahora retorna ResponseDataDto con código y lista de datos.
- */
 @Service
 public class ResidenceServiceImpl implements ResidenceService {
 
@@ -40,14 +37,17 @@ public class ResidenceServiceImpl implements ResidenceService {
     @Autowired
     private ICountryRepository countryRepository;
 
+    @Autowired
+    private S3Service s3Service;
+
     @Override
     public ResponseDataDto<List<ResidenceProofResponseDto>> getResidenceProofs(Long adminId) throws SQLException {
-        log.info(LOG_TXT + GET_PROOFS_TXT + "Recuperando pruebas de residencia, userId={}", adminId);
+        log.info(LOG_TXT + GET_PROOFS_TXT + " Recuperando pruebas de residencia, userId={}", adminId);
 
-        // 1) Proyecciones desde la base
+        // 1) Obtener proyecciones desde la base
         List<IResidenceProofDto> projections = residenceRepository.getResidenceProofs(adminId, null);
 
-        // 2) Construcción manual de lista de DTOs
+        // 2) Construir lista de DTOs con presigned URL
         List<ResidenceProofResponseDto> dtos = new ArrayList<>();
         for (IResidenceProofDto p : projections) {
 
@@ -55,14 +55,20 @@ public class ResidenceServiceImpl implements ResidenceService {
             List<ICountryDto> country = countryRepository.getCountries(user.getCountryId());
 
             ResidenceProofResponseDto dto = ResidenceProofResponseDto.fromProjectionAndUser(p, user, country.get(0));
+
+            // Si tiene archivo en S3, generar URL prefirmada (15 min)
+            if (p.getProofDocUrl() != null && !p.getProofDocUrl().isBlank()) {
+                String presignedUrl = s3Service.presignGet(p.getProofDocUrl(), 15L);
+                dto.setProofDocUrl(presignedUrl);
+            }
+
             dtos.add(dto);
         }
 
-        // 3) Envolver en ResponseDataDto
+        // 3) Retornar envuelto en ResponseDataDto
         return ResponseDataDto.<List<ResidenceProofResponseDto>>builder()
                 .code(200)
                 .data(dtos)
                 .build();
     }
-
 }

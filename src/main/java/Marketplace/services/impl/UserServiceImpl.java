@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
                 for (String url : images) {
                     if (url != null) {
                         try {
-                            s3Service.deleteFile(s3Service.extractKey(url));
+                            s3Service.deletePublic(s3Service.extractKey(url));
                         } catch (Exception ex) {
                             log.error("Error deleting user image", ex);
                         }

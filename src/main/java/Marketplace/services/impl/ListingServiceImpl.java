@@ -111,7 +111,7 @@ public class ListingServiceImpl implements ListingService {
                 List<String> auxUrls = new ArrayList<>();
                 try {
                         // 1) Subir la imagen principal
-                        mainImageUrl = s3Service.uploadFile(mainImage);
+                        mainImageUrl = s3Service.uploadPublic(mainImage);
 
                         // 2) Subir imágenes auxiliares (hasta 4)
                         if (images != null) {
@@ -119,7 +119,7 @@ public class ListingServiceImpl implements ListingService {
                                 for (int i = 0; i < limit; i++) {
                                         MultipartFile img = images.get(i);
                                         if (img != null) {
-                                                auxUrls.add(s3Service.uploadFile(img));
+                                                auxUrls.add(s3Service.uploadPublic(img));
                                         }
                                 }
                         }
@@ -164,14 +164,14 @@ public class ListingServiceImpl implements ListingService {
                 } catch (Exception e) {
                         if (mainImageUrl != null) {
                                 try {
-                                        s3Service.deleteFile(s3Service.extractKey(mainImageUrl));
+                                        s3Service.deletePublic(s3Service.extractKey(mainImageUrl));
                                 } catch (Exception ex) {
                                         log.error("Error limpiando main image", ex);
                                 }
                         }
                         for (String url : auxUrls) {
                                 try {
-                                        s3Service.deleteFile(s3Service.extractKey(url));
+                                        s3Service.deletePublic(s3Service.extractKey(url));
                                 } catch (Exception ex) {
                                         log.error("Error limpiando aux image", ex);
                                 }

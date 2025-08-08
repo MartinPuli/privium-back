@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface IUserRepository extends JpaRepository<User, Integer> {
     
-    @Query(value = "CALL CreateUser(:name, :lastname, :email, :passwordHash, :dni, :countryId, :phone, :proofMessage, :proofImage)", nativeQuery = true)
+    @Query(value = "CALL CreateUser(:name, :lastname, :email, :passwordHash, :dni, :countryId, :phone)", nativeQuery = true)
     User createUser(
         @Param("name") String name,
         @Param("lastname") String lastname,
@@ -20,9 +20,7 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
         @Param("passwordHash") String passwordHash,
         @Param("dni") String dni,
         @Param("countryId") Long countryId,
-        @Param("phone") String phone,
-        @Param("proofMessage") String proofMessage,
-        @Param("proofImage") String proofImage
+        @Param("phone") String phone
     );
 
     @Query(value = "CALL GetUserByEmail(:email)", nativeQuery = true)

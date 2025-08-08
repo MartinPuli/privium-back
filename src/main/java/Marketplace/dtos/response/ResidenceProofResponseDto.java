@@ -36,7 +36,7 @@ public class ResidenceProofResponseDto implements Serializable {
 
     // Detalles de la prueba
     private String proofMessage;
-    private String proofImage;
+    private String proofDocUrl;
     private LocalDateTime createdAt;
 
     /**
@@ -53,7 +53,7 @@ public class ResidenceProofResponseDto implements Serializable {
             .mail(user.getEmail())
             .countryName(country.getName())
             .proofMessage(p.getProofMessage())
-            .proofImage(p.getProofImage())
+            .proofDocUrl(p.getProofDocUrl())
             .createdAt(p.getCreatedAt())
             .build();
     }

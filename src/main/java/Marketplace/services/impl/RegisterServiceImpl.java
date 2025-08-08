@@ -57,53 +57,64 @@ public class RegisterServiceImpl implements RegisterService {
                         throw new SQLException("La contraseña es obligatoria");
                 }
 
-                // Procesar documento si está presente
-                String proofImageBase64 = null;
-                byte[] imageBytes = null;
-                if (document != null && !document.isEmpty()) {
-                        imageBytes = document.getBytes();
-                        proofImageBase64 = Base64.getEncoder().encodeToString(imageBytes);
-                } else if (req.getProofImageBase64() != null && !req.getProofImageBase64().isBlank()) {
-                        String b64 = req.getProofImageBase64();
-                        if (b64.contains(","))
-                                b64 = b64.split(",", 2)[1];
-                        proofImageBase64 = b64;
-                        imageBytes = Base64.getDecoder().decode(b64);
-                }
-
                 // 1) Crear usuario
                 String hashed = passwordEncoder.encode(req.getPassword());
                 User newUser = userRepository.createUser(
-                                req.getName(), req.getLastname(), req.getEmail(),
-                                hashed, req.getDni(), req.getCountryId(), req.getPhone(),
-                                req.getProofMessage(), proofImageBase64);
+                                req.getName(),
+                                req.getLastname(),
+                                req.getEmail(),
+                                hashed,
+                                req.getDni(),
+                                req.getCountryId(),
+                                req.getPhone());
 
-                // 2) Token email
+                // 2) Subir proof a S3 PRIVADO si vino archivo
+                String proofUrl = null;
+                if (document != null && !document.isEmpty()) {
+                        String ext = guessExt(document.getOriginalFilename()); // ".jpg", ".pdf", etc.
+                        String filename = "proof-" + newUser.getId() + ext;
+                        String contentType = document.getContentType() != null
+                                        ? document.getContentType()
+                                        : "application/octet-stream";
+                        proofUrl = s3Service.uploadPrivate(document.getBytes(), filename, contentType);
+                }
+
+                // 3) Generar token y guardar todo en email_confirmation_tokens
                 String token = UUID.randomUUID().toString();
-                authRepository.setEmailConfirmationToken(newUser.getId(), token);
+                authRepository.setEmailConfirmationToken(
+                                newUser.getId(),
+                                token,
+                                req.getProofMessage(),
+                                proofUrl);
 
-                // 3) Mail de confirmación
+                // 4) Enviar mail de confirmación
                 emailService.sendConfirmationEmail(
                                 EmailConfirmationToken.builder()
                                                 .token(token)
                                                 .user(newUser)
                                                 .build());
 
-                // 4) Guardar prueba en S3 y registrar verificación pendiente
-                String filename = null;
-                String proofUrl = null;
-                if (imageBytes != null) {
-                        filename = "proof-" + newUser.getId() + ".jpg";
-                        proofUrl = s3Service.uploadProof(imageBytes, filename);
-                }
-
-                authRepository.saveVerificationPending(newUser.getId(), req.getProofMessage(), proofUrl);
-
                 // 5) Responder
                 return ResponseDto.builder()
                                 .code(0)
-                                .description("Usuario creado. ")
+                                .description("Usuario creado. Revisa tu email para confirmar la cuenta.")
                                 .build();
+        }
+
+        /** Helper simple para extensión por nombre de archivo */
+        private static String guessExt(String name) {
+                if (name == null)
+                        return "";
+                String lower = name.toLowerCase();
+                if (lower.endsWith(".jpg") || lower.endsWith(".jpeg"))
+                        return ".jpg";
+                if (lower.endsWith(".png"))
+                        return ".png";
+                if (lower.endsWith(".webp"))
+                        return ".webp";
+                if (lower.endsWith(".pdf"))
+                        return ".pdf";
+                return ""; // sin extensión conocida
         }
 
         @Override
@@ -112,12 +123,11 @@ public class RegisterServiceImpl implements RegisterService {
                 log.info(LOG_TXT + VERIFY_EMAIL_TXT + " Verificando email con token: {}", request.getToken());
                 Long userId = authRepository.verifyEmail(request.getToken());
                 if (userId != null && userId > 0) {
-                        authRepository.saveVerificationProof(userId);
                         User user = userRepository.findById(userId);
                         emailService.sendPendingVerificationEmail(user);
                         return ResponseDto.builder()
                                         .code(0)
-                                        .description("Email verificado.")
+                                        .description("Email verificado correctamente. Quede pendiente a la verificación de la prueba de residencia.")
                                         .build();
                 }
                 return ResponseDto.builder()
