@@ -10,5 +10,5 @@ import jakarta.mail.MessagingException;
 
 public interface RegisterService {
     ResponseDto registerUser(UserRequestDto req) throws SQLException, MessagingException, IOException;
-    ResponseDto verifyEmail(UserRequestDto request) throws SQLException;
+    ResponseDto verifyEmail(UserRequestDto request) throws SQLException, MessagingException;
 }

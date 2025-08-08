@@ -51,6 +51,28 @@ public class S3Service {
     }
 
     /**
+     * Sube un arreglo de bytes al bucket privado para pruebas de verificación.
+     * Retorna la URL del objeto subido.
+     */
+    public String uploadProof(byte[] data, String filename) throws IOException {
+        if (data == null || data.length == 0 || !StringUtils.hasText(filename)) {
+            throw new IllegalArgumentException("Archivo vacío o sin nombre");
+        }
+
+        String clean = filename.replaceAll("[\\s()]", "_");
+        String key = "verification-proofs/" + UUID.randomUUID() + "-" + clean;
+
+        s3.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(key)
+                        .build(),
+                RequestBody.fromBytes(data));
+
+        return String.format("https://%s.s3.amazonaws.com/%s", bucket, key);
+    }
+
+    /**
      * Elimina un objeto del bucket dado su key.
      */
     public void deleteFile(String key) {

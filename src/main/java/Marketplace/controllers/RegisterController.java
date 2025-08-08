@@ -51,7 +51,7 @@ public class RegisterController {
         // =======================================================
         @PostMapping(value = "/verifyEmail", headers = TextConstant.APPLICATION_JSON)
         public ResponseEntity<ResponseDto> verifyEmail(
-                        @RequestBody UserRequestDto request) throws SQLException {
+                        @RequestBody UserRequestDto request) throws SQLException, MessagingException {
 
                 log.info(LOG_TXT + VERIFY_EMAIL_TXT + " Verificando email.");
 

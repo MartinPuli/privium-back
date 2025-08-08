@@ -14,8 +14,16 @@ public interface IAuthRepository extends JpaRepository<ResponseDto, Integer> {
     ResponseDto setEmailConfirmationToken(@Param("userId") Long userId,
                                           @Param("token") String token);
 
+    @Query(value = "CALL SaveVerificationPending(:userId, :message, :proofUrl)", nativeQuery = true)
+    ResponseDto saveVerificationPending(@Param("userId") Long userId,
+                                        @Param("message") String message,
+                                        @Param("proofUrl") String proofUrl);
+
     @Query(value = "CALL VerifyEmail(:token)", nativeQuery = true)
-    ResponseDto verifyEmail(@Param("token") String token);
+    Long verifyEmail(@Param("token") String token);
+
+    @Query(value = "CALL SaveVerificationProof(:userId)", nativeQuery = true)
+    ResponseDto saveVerificationProof(@Param("userId") Long userId);
 
     @Query(value = "CALL SetResetToken(:email, :token)", nativeQuery = true)
     ResponseDto setResetToken(@Param("email") String email,

@@ -19,6 +19,8 @@ public interface EmailService {
         String imageFilename
     ) throws MessagingException, IOException;
 
+    void sendPendingVerificationEmail(User user) throws MessagingException;
+
     public void sendResidenceDecisionEmail(User user, boolean approved)
                         throws MessagingException;
 
