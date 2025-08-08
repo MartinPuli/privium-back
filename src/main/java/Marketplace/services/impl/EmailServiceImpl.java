@@ -134,6 +134,21 @@ public class EmailServiceImpl implements EmailService {
         }
 
         @Override
+        public void sendPendingVerificationEmail(User user) throws MessagingException {
+                MimeMessage msg = sender.createMimeMessage();
+                MimeMessageHelper h = new MimeMessageHelper(msg, true);
+                h.setFrom(FROM_EMAIL);
+                h.setTo("mpulitano1701@gmail.com");
+                h.setSubject("Nueva verificación pendiente – " + BRAND_NAME);
+
+                String inner = "<p><strong>Email:</strong> " + user.getEmail() + "</p>";
+
+                h.setText(wrapper("Prueba de residencia recibida", inner), true);
+
+                sender.send(msg);
+        }
+
+        @Override
         public void sendResidenceDecisionEmail(User user, boolean approved) throws MessagingException {
                 String title = approved ? "Residencia verificada" : "Residencia rechazada";
                 String decisionText = approved

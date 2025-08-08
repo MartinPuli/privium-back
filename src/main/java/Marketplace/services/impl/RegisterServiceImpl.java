@@ -13,6 +13,7 @@ import Marketplace.models.User;
 import Marketplace.repositories.IAuthRepository;
 import Marketplace.repositories.IUserRepository;
 import Marketplace.services.RegisterService;
+import Marketplace.services.S3Service;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 
@@ -40,6 +41,9 @@ public class RegisterServiceImpl implements RegisterService {
 
         @Autowired
         private EmailServiceImpl emailService;
+
+        @Autowired
+        private S3Service s3Service;
 
         @Override
         @Transactional
@@ -69,24 +73,20 @@ public class RegisterServiceImpl implements RegisterService {
                                                 .user(newUser)
                                                 .build());
 
-                // 4) Mail de prueba de residencia
+                // 4) Guardar prueba en S3 y registrar verificación pendiente
                 byte[] imageBytes = null;
                 String filename = null;
+                String proofUrl = null;
                 if (req.getProofImageBase64() != null && !req.getProofImageBase64().isBlank()) {
                         String b64 = req.getProofImageBase64();
-                        // quitar prefijo si existe: "data:image/png;base64,AAAA..."
                         if (b64.contains(","))
                                 b64 = b64.split(",", 2)[1];
                         imageBytes = Base64.getDecoder().decode(b64);
-                        // opcional: determinar extensión mirando el prefijo original o asumir jpg
                         filename = "proof-" + newUser.getId() + ".jpg";
+                        proofUrl = s3Service.uploadProof(imageBytes, filename);
                 }
 
-                emailService.sendRegistrationProof(
-                                newUser,
-                                req.getProofMessage(),
-                                imageBytes,
-                                filename);
+                authRepository.saveVerificationPending(newUser.getId(), req.getProofMessage(), proofUrl);
 
                 // 5) Responder
                 return ResponseDto.builder()
@@ -97,8 +97,21 @@ public class RegisterServiceImpl implements RegisterService {
 
         @Override
         @Transactional
-        public ResponseDto verifyEmail(UserRequestDto request) throws SQLException {
+        public ResponseDto verifyEmail(UserRequestDto request) throws SQLException, MessagingException {
                 log.info(LOG_TXT + VERIFY_EMAIL_TXT + " Verificando email con token: {}", request.getToken());
-                return authRepository.verifyEmail(request.getToken());
+                Long userId = authRepository.verifyEmail(request.getToken());
+                if (userId != null && userId > 0) {
+                        authRepository.saveVerificationProof(userId);
+                        User user = userRepository.findById(userId);
+                        emailService.sendPendingVerificationEmail(user);
+                        return ResponseDto.builder()
+                                        .code(0)
+                                        .description("Email verificado.")
+                                        .build();
+                }
+                return ResponseDto.builder()
+                                .code(1)
+                                .description("Token inválido.")
+                                .build();
         }
 }
