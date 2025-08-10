@@ -32,6 +32,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
     private static final String LOG_TXT = "ListingCUDService";
     private static final String EDIT_TXT = "[editListing]";
     private static final String STATUS_TXT = "[manageStatus]";
+    private static final String DELETE_IMG_TXT = "[deleteListingImage]";
 
     @Autowired
     private IListingCUDRepository listingCUDRepository;
@@ -263,5 +264,58 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         }
 
         return listingCUDRepository.manageStatus(req.getAction(), req.getListingId());
+    }
+
+    /* ─────────────────────── DELETE IMAGE ────────────────────── */
+    @Override
+    public ResponseDto deleteListingImage(Long listingId, Integer imageNumber) throws Exception {
+        log.info(LOG_TXT + DELETE_IMG_TXT + " listingId={} img={}", listingId, imageNumber);
+
+        if (imageNumber == null || imageNumber < 1 || imageNumber > 4) {
+            return ResponseDto.builder()
+                    .code(400)
+                    .description("Número de imagen inválido")
+                    .build();
+        }
+
+        IListingImagesUrlsDto current = listingRepository.getListingImages(listingId);
+        if (current == null) {
+            return ResponseDto.builder()
+                    .code(404)
+                    .description("Publicación no encontrada")
+                    .build();
+        }
+
+        String[] aux = {
+                current.getAux1(),
+                current.getAux2(),
+                current.getAux3(),
+                current.getAux4()
+        };
+
+        int idx = imageNumber - 1;
+        if (aux[idx] == null) {
+            return ResponseDto.builder()
+                    .code(404)
+                    .description("Imagen no encontrada")
+                    .build();
+        }
+
+        // Delete from S3 and remove from array
+        s3Service.deleteFile(s3Service.extractKey(aux[idx]));
+        aux[idx] = null;
+
+        // Build CSV with remaining images
+        String imgSep = String.valueOf((char) 31);
+        String csv = Arrays.stream(aux).collect(Collectors.joining(imgSep));
+        if (csv.isBlank())
+            csv = null;
+
+        listingCUDRepository.setAuxImages(listingId, csv);
+
+        return ResponseDto.builder()
+                .code(200)
+                .description("Imagen eliminada correctamente")
+                .build();
     }
 }
