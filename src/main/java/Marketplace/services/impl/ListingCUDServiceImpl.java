@@ -84,7 +84,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         // Si viene archivo y es diferente al actual (por URL), sube y reemplaza
         if (mainImage != null) {
             // Si el archivo es diferente al actual (por nombre o checksum, aquí solo por URL)
-            String uploaded = s3Service.uploadPublic(mainImage);
+            String uploaded = s3Service.uploadPrivate(mainImage);
             if (!Objects.equals(uploaded, currentMain)) {
                 uploadedMain = uploaded;
                 if (currentMain != null) {
@@ -126,7 +126,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                 if (finalAux[i] != null) {
                     deleteKeys.add(finalAux[i]);
                 }
-                desiredUrl = s3Service.uploadPublic(parts[i]);
+                desiredUrl = s3Service.uploadPrivate(parts[i]);
                 uploadedAux.add(desiredUrl);
             }
             // c) Sin archivo, pero desiredUrl == null y había algo → borrar
@@ -193,7 +193,7 @@ public class ListingCUDServiceImpl implements ListingCUDService {
             public void afterCommit() {
                 for (String url : keysForDeletion) {
                     try {
-                        s3Service.deletePublic(s3Service.extractKey(url));
+                        s3Service.deletePrivate(url);
                     } catch (Exception ex) {
                         log.error("Error deleting old image", ex);
                     }
@@ -205,14 +205,14 @@ public class ListingCUDServiceImpl implements ListingCUDService {
         } catch (Exception e) {
             if (uploadedMain != null) {
                 try {
-                    s3Service.deletePublic(s3Service.extractKey(uploadedMain));
+                    s3Service.deletePrivate(uploadedMain);
                 } catch (Exception ex) {
                     log.error("Error limpiando main image", ex);
                 }
             }
             for (String url : uploadedAux) {
                 try {
-                    s3Service.deletePublic(s3Service.extractKey(url));
+                    s3Service.deletePrivate(url);
                 } catch (Exception ex) {
                     log.error("Error limpiando aux image", ex);
                 }
@@ -241,13 +241,13 @@ public class ListingCUDServiceImpl implements ListingCUDService {
                     }
                     try {
                         if (imgs.getMainImage() != null) {
-                            s3Service.deletePublic(s3Service.extractKey(imgs.getMainImage()));
+                            s3Service.deletePrivate(imgs.getMainImage());
                         }
                         Arrays.asList(imgs.getAux1(), imgs.getAux2(), imgs.getAux3(), imgs.getAux4())
                                 .forEach(url -> {
                                     if (url != null) {
                                         try {
-                                            s3Service.deletePublic(s3Service.extractKey(url));
+                                            s3Service.deletePrivate(url);
                                         } catch (Exception ex) {
                                             log.error("Error deleting aux image", ex);
                                         }

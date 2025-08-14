@@ -1,8 +1,6 @@
 package Marketplace.services;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -14,13 +12,11 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectTaggingRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
@@ -29,10 +25,6 @@ public class S3Service {
 
     private final S3Client s3;
     private final S3Presigner presigner;
-
-    // OJO: acá antes tenías @Value("privium-photos") (literal). Debe ser property.
-    @Value("${s3.public-bucket:privium-photos}")
-    private String publicBucket;
 
     @Value("${s3.private-bucket:privium-private}")
     private String privateBucket;
@@ -44,25 +36,6 @@ public class S3Service {
     public S3Service(S3Client s3, S3Presigner presigner) {
         this.s3 = s3;
         this.presigner = presigner;
-    }
-
-    /* ===================== PÚBLICO (si lo usás) ===================== */
-
-    /** Sube al bucket público y devuelve una URL directa (no prefirmada). */
-    public String uploadPublic(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty() || !StringUtils.hasText(file.getOriginalFilename())) {
-            throw new IllegalArgumentException("Archivo vacío o sin nombre");
-        }
-        String key = "publicaciones/" + uuidName(file.getOriginalFilename());
-        s3.putObject(
-                PutObjectRequest.builder()
-                        .bucket(publicBucket)
-                        .key(key)
-                        .contentType(file.getContentType())
-                        .build(),
-                RequestBody.fromBytes(file.getBytes()));
-        // URL virtual-hosted–style; servirá solo si el objeto/bucket es público.
-        return "https://" + publicBucket + ".s3.amazonaws.com/" + key;
     }
 
     /* ===================== PRIVADO ===================== */
@@ -119,27 +92,6 @@ public class S3Service {
         }
     }
 
-    public void deletePublic(String keyOrUrl) {
-        if (!StringUtils.hasText(keyOrUrl))
-            return;
-
-        // Si te pasan la URL pública, la convierto a key
-        String key = keyOrUrl.startsWith("http")
-                ? extractKey(keyOrUrl)
-                : keyOrUrl;
-
-        try {
-            s3.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(publicBucket)
-                    .key(key)
-                    .build());
-        } catch (NoSuchKeyException ignored) {
-            // Ya no existe: ok, lo tratamos como idempotente
-        } catch (S3Exception e) {
-            throw e;
-        }
-    }
-
     /* ===================== PRESIGNED ===================== */
 
     /** Presigned GET para que el front pueda leer un objeto privado. */
@@ -178,14 +130,4 @@ public class S3Service {
         return UUID.randomUUID() + "-" + clean;
     }
 
-    /** Si alguna vez guardaste URL y necesitás la key. */
-    public static String extractKey(String fileUrl) {
-        try {
-            URI uri = new URI(fileUrl);
-            String path = uri.getPath();
-            return path.startsWith("/") ? path.substring(1) : path;
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("URL inválida para extraer key: " + fileUrl, e);
-        }
-    }
 }

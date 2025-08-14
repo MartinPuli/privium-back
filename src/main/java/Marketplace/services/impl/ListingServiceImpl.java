@@ -57,6 +57,12 @@ public class ListingServiceImpl implements ListingService {
 
                 ListingInfoResponseDto infoDto = ListingInfoResponseDto.convertEntityToDto(cats, imgs);
 
+                infoDto.getAuxiliaryImages().forEach(img -> {
+                        if (img.getImgUrl() != null) {
+                                img.setImgUrl(s3Service.presignGet(img.getImgUrl(), null));
+                        }
+                });
+
                 return ResponseDataDto.<ListingInfoResponseDto>builder()
                                 .code(200)
                                 .description("Información de publicación")
@@ -88,6 +94,11 @@ public class ListingServiceImpl implements ListingService {
 
                 List<ListingResponseDto> data = raw.stream()
                                 .map(ListingResponseDto::convertEntityToDto)
+                                .peek(dto -> {
+                                        if (dto.getMainImage() != null) {
+                                                dto.setMainImage(s3Service.presignGet(dto.getMainImage(), null));
+                                        }
+                                })
                                 .collect(Collectors.toList());
 
                 return ResponseDataDto.<List<ListingResponseDto>>builder()
@@ -111,7 +122,7 @@ public class ListingServiceImpl implements ListingService {
                 List<String> auxUrls = new ArrayList<>();
                 try {
                         // 1) Subir la imagen principal
-                        mainImageUrl = s3Service.uploadPublic(mainImage);
+                        mainImageUrl = s3Service.uploadPrivate(mainImage);
 
                         // 2) Subir imágenes auxiliares (hasta 4)
                         if (images != null) {
@@ -119,7 +130,7 @@ public class ListingServiceImpl implements ListingService {
                                 for (int i = 0; i < limit; i++) {
                                         MultipartFile img = images.get(i);
                                         if (img != null) {
-                                                auxUrls.add(s3Service.uploadPublic(img));
+                                                auxUrls.add(s3Service.uploadPrivate(img));
                                         }
                                 }
                         }
@@ -155,6 +166,9 @@ public class ListingServiceImpl implements ListingService {
 
                         // 6) Mapear DTO de respuesta
                         ListingResponseDto dto = ListingResponseDto.convertEntityToDto(created);
+                        if (dto.getMainImage() != null) {
+                                dto.setMainImage(s3Service.presignGet(dto.getMainImage(), null));
+                        }
 
                         return ResponseDataDto.<ListingResponseDto>builder()
                                         .code(200)
@@ -164,14 +178,14 @@ public class ListingServiceImpl implements ListingService {
                 } catch (Exception e) {
                         if (mainImageUrl != null) {
                                 try {
-                                        s3Service.deletePublic(s3Service.extractKey(mainImageUrl));
+                                        s3Service.deletePrivate(mainImageUrl);
                                 } catch (Exception ex) {
                                         log.error("Error limpiando main image", ex);
                                 }
                         }
                         for (String url : auxUrls) {
                                 try {
-                                        s3Service.deletePublic(s3Service.extractKey(url));
+                                        s3Service.deletePrivate(url);
                                 } catch (Exception ex) {
                                         log.error("Error limpiando aux image", ex);
                                 }
