@@ -100,14 +100,29 @@ public class ListingController {
                         @RequestHeader(TextConstant.USER_HEADER) Long idUser,
                         @RequestPart("data") @Valid ListingRequestDto request,
                         @RequestPart(value = "mainImage", required = false) MultipartFile mainImage,
+                        // ✅ acepta lista como la manda el front (images, images, ...)
+                        @RequestPart(value = "images", required = false) @Size(max = 4) List<MultipartFile> images,
+                        // ✅ sigue aceptando image1..image4 por compatibilidad
                         @RequestPart(value = "image1", required = false) MultipartFile image1,
                         @RequestPart(value = "image2", required = false) MultipartFile image2,
                         @RequestPart(value = "image3", required = false) MultipartFile image3,
-                        @RequestPart(value = "image4", required = false) MultipartFile image4)
-                        throws Exception {
-                log.info(LOG_TXT + EDIT_TXT + " Inicia edición de publicación id={}", request.getListingId());
-                ResponseDto resp = listingCUDService.editListingWithImages(idUser, request, mainImage, image1, image2, image3, image4);
-                log.info(LOG_TXT + EDIT_TXT + " Finaliza edición de publicación. result={}", resp);
+                        @RequestPart(value = "image4", required = false) MultipartFile image4) throws Exception {
+
+                MultipartFile[] slots = new MultipartFile[4];
+
+                if (images != null && !images.isEmpty()) {
+                        for (int i = 0; i < Math.min(4, images.size()); i++) {
+                                slots[i] = images.get(i);
+                        }
+                } else {
+                        slots[0] = image1;
+                        slots[1] = image2;
+                        slots[2] = image3;
+                        slots[3] = image4;
+                }
+
+                ResponseDto resp = listingCUDService.editListingWithImages(
+                                idUser, request, mainImage, slots[0], slots[1], slots[2], slots[3]);
                 return ResponseEntity.ok(resp);
         }
 
